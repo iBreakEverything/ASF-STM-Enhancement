@@ -1493,6 +1493,9 @@
                         bots.friends = false;
                     }
                     if (bots.Success) {
+                        // Filter bots without TradingCard (5) preference in MatchableTypes
+                        // https://github.com/JustArchiNET/ArchiSteamFarm/wiki/Configuration#matchabletypes
+                        bots.Result = bots.Result.filter(bot => bot.MatchableTypes.find(x => x === 5))
                         debugPrint("found total " + bots.Result.length + " bots");  // DEBUG
                         localStorage.setItem("Ryzhehvost.ASF.STM.BotCache", JSON.stringify(bots));
                         buttonPressedEvent();
