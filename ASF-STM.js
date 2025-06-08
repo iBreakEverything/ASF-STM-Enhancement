@@ -348,11 +348,6 @@
         // message.textContent = text;
     }
 
-    function hideMessage() {
-        let messageBox = document.getElementById("asf_stm_messagebox");
-        messageBox.setAttribute("style", "display: none;");
-    }
-
     function hideThrobber() {
         let throbber = document.getElementById("throbber");
         throbber.setAttribute("style", "display: none;");
@@ -738,8 +733,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
                 let status = xhr.status;
@@ -785,8 +779,7 @@
                             }
                             hideThrobber();
                             enableButton();
-                            let stopButton = document.getElementById("asf_stm_stop");
-                            stopButton.parentNode.removeChild(stopButton);
+                            document.querySelector("#asf_stm_stop").hidden = true;
                             return;
                         }
                     } catch (error) {
@@ -822,8 +815,7 @@
                     }
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
             };
@@ -833,8 +825,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
                 errors++;
@@ -853,8 +844,7 @@
                     updateMessage("Error getting badge data");
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
             };
@@ -906,8 +896,7 @@
             hideThrobber();
             updateMessage("No cards to match");
             enableButton();
-            let stopButton = document.getElementById("asf_stm_stop");
-            stopButton.parentNode.removeChild(stopButton);
+            document.querySelector("#asf_stm_stop").hidden = true;
             return;
         } else {
             SaveParams();
@@ -923,11 +912,9 @@
             debugPrint("finished");  // DEBUG
             debugPrint(new Date(Date.now()));  // DEBUG
             hideThrobber();
-            hideMessage();
             updateProgress();
             enableButton();
-            let stopButton = document.getElementById("asf_stm_stop");
-            stopButton.parentNode.removeChild(stopButton);
+            document.querySelector("#asf_stm_stop").hidden = true;
             return;
         }
 
@@ -988,8 +975,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
                 let status = xhr.status;
@@ -1083,8 +1069,7 @@
                     }
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
             };
@@ -1094,8 +1079,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
                 errors++;
@@ -1114,8 +1098,7 @@
                     updateMessage("Error getting badge data");
                     hideThrobber();
                     enableButton();
-                    let stopButton = document.getElementById("asf_stm_stop");
-                    stopButton.parentNode.removeChild(stopButton);
+                    document.querySelector("#asf_stm_stop").hidden = true;
                     return;
                 }
             };
@@ -1187,8 +1170,7 @@
                 updateMessage("Interrupted by user");
                 hideThrobber();
                 enableButton();
-                let stopButton = document.getElementById("asf_stm_stop");
-                stopButton.parentNode.removeChild(stopButton);
+                document.querySelector("#asf_stm_stop").hidden = true;
                 return;
             }
             let status = xhr.status;
@@ -1253,8 +1235,7 @@
                         hideThrobber();
                         updateMessage("No cards to match");
                         enableButton();
-                        let stopButton = document.getElementById("asf_stm_stop");
-                        stopButton.parentNode.removeChild(stopButton);
+                        document.querySelector("#asf_stm_stop").hidden = true;
                         return;
                     } else {
                         setTimeout(
@@ -1273,8 +1254,7 @@
                 }
                 hideThrobber();
                 enableButton();
-                let stopButton = document.getElementById("asf_stm_stop");
-                stopButton.parentNode.removeChild(stopButton);
+                document.querySelector("#asf_stm_stop").hidden = true;
                 return;
             }
         };
@@ -1283,8 +1263,7 @@
                 updateMessage("Interrupted by user");
                 hideThrobber();
                 enableButton();
-                let stopButton = document.getElementById("asf_stm_stop");
-                stopButton.parentNode.removeChild(stopButton);
+                document.querySelector("#asf_stm_stop").hidden = true;
                 return;
             }
             errors++;
@@ -1302,8 +1281,7 @@
                 updateMessage("Error getting badge page");
                 hideThrobber();
                 enableButton();
-                let stopButton = document.getElementById("asf_stm_stop");
-                stopButton.parentNode.removeChild(stopButton);
+                document.querySelector("#asf_stm_stop").hidden = true;
                 return;
             }
         };
@@ -1397,12 +1375,10 @@
     }
 
     function stopButtonEvent() {
-        let stopButton = document.getElementById("asf_stm_stop");
-        stopButton.removeEventListener("click", stopButtonEvent, false);
-        stopButton.title = "Stopping...";
-        stopButton.classList.add("btn_disabled");
+        document.querySelector("#asf_stm_stop").hidden = true;
         updateMessage("Stopping...");
         stop = true;
+        progressBar.labelElements[progressBar.currentStep].textContent = '❌';
     }
 
     function buttonPressedEvent() {
@@ -1425,13 +1401,13 @@
         mainContentDiv.textContent = "";
         mainContentDiv.style.width = "90%";
         mainContentDiv.innerHTML = `{{MAIN_CONTENT_DIV.INNER_HTML}}`;
-        document.getElementById("asf_stm_stop").addEventListener("click", stopButtonEvent, false);
         document.getElementById("asf_stm_filters_body").addEventListener("change", filterEventHandler);
         document.getElementById("asf_stm_filter_all").addEventListener("click", filterSwitchesHandler);
         document.getElementById("asf_stm_filter_none").addEventListener("click", filterSwitchesHandler);
         document.getElementById("asf_stm_filter_invert").addEventListener("click", filterSwitchesHandler);
         document.getElementById("asf_stm_filters_button").addEventListener("click", filtersButtonEvent, false);
         observer.observe(document.querySelector('#asf_stm_filters_body'), { attributes: true, childList: true, subtree: true });
+        document.querySelector("#asf_stm_stop").hidden = false;
         resetRadials();
         maxPages = 1;
         stop = false;
@@ -1445,6 +1421,22 @@
     }
 
     function resetRadials() {
+        const labels = document.querySelectorAll('.progress-step > .label');
+
+        if (globalSettings.useScanFilters && globalSettings.scanFilters.filter(x => x.active)) {
+            labels[0].textContent = 'Filters';
+        } else {
+            labels[0].textContent = 'Badge Pages';
+        }
+
+        if (globalSettings.matchFriends) {
+            labels[2].textContent = 'Friends';
+            labels[3].textContent = 'Friend Badges';
+        } else {
+            labels[2].textContent = 'Bots';
+            labels[3].textContent = 'Bot Badges';
+        }
+
         progressBar = {
             currentStep: 0, currentSubstep: 0, substeps: [],
             radialElements: [...document.querySelectorAll('.radial-progress')],
@@ -1619,10 +1611,10 @@
         } else {
             bots = botCache;
         }
-
+        // Scan
         let buttonDiv = document.createElement("div");
         buttonDiv.setAttribute("class", "profile_small_header_additional");
-        buttonDiv.setAttribute("style", "margin-top: 40px; right: 70px");
+        buttonDiv.setAttribute("style", "margin-top: 40px; right: 110px");
         buttonDiv.setAttribute("id", "asf_stm_button_div");
         buttonDiv.setAttribute("title", "Scan ASF STM");
         let button = document.createElement("a");
@@ -1633,9 +1625,10 @@
         buttonDiv.appendChild(button);
         let anchor = document.getElementsByClassName("profile_small_header_texture")[0];
         anchor.appendChild(buttonDiv);
+        // Config
         let confButtonDiv = document.createElement("div");
         confButtonDiv.setAttribute("class", "profile_small_header_additional");
-        confButtonDiv.setAttribute("style", "margin-top: 40px;");
+        confButtonDiv.setAttribute("style", "margin-top: 40px; right: 70px");
         confButtonDiv.setAttribute("id", "asf_stm_config_div");
         confButtonDiv.setAttribute("title", "Configuration");
         let confButton = document.createElement("a");
@@ -1646,6 +1639,21 @@
         confButtonDiv.appendChild(confButton);
         anchor.appendChild(confButtonDiv);
         confButton.addEventListener("click", ShowConfigDialog, false);
+        // Stop
+        let stopButtonDiv = document.createElement("div");
+        stopButtonDiv.setAttribute("class", "profile_small_header_additional");
+        stopButtonDiv.setAttribute("style", "margin-top: 40px; right: 40px");
+        stopButtonDiv.setAttribute("id", "asf_stm_stop_div");
+        stopButtonDiv.setAttribute("title", "Stop");
+        stopButtonDiv.hidden = true;
+        let stopButton = document.createElement("a");
+        stopButton.setAttribute("class", "btn_darkred_white_innerfade btn_medium_thin");
+        stopButton.setAttribute("id", "asf_stm_stop");
+        stopButton.appendChild(document.createElement("span"));
+        stopButton.firstChild.appendChild(document.createTextNode("🛑"));
+        stopButtonDiv.appendChild(stopButton);
+        anchor.appendChild(stopButtonDiv);
+        stopButton.addEventListener("click", stopButtonEvent, false);
 
         enableButton();
 

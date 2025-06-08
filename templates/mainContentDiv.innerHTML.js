@@ -10,34 +10,31 @@
         </div>
     </div>
 
-    <div style="width: 100%;">
-        <div id="asf_stm_stop" class="btn_darkred_white_innerfade btn_medium_thin" style="float: right;margin-top: -12px;margin-left: 10px;" title="Stop scan">
-            <span>🛑</span>
-        </div>
+    <div style="width: 50%; margin: auto;">
         <div class="progress-container">
             <div class="progress-step">
                 <div class="radial-progress" style="--progress: 0deg;">
                     <div class="progress-inner">?</div>
                 </div>
-                <span class="label">Scan Badge Pages</span>
+                <span class="label"></span>
             </div>
             <div class="progress-step">
                 <div class="radial-progress" style="--progress: 0deg;">
                     <div class="progress-inner">?</div>
                 </div>
-                <span class="label">Fetch Badge Data</span>
+                <span class="label">Badges</span>
             </div>
             <div class="progress-step">
                 <div class="radial-progress" style="--progress: 0deg;">
                     <div class="progress-inner">?</div>
                 </div>
-                <span class="label">Scan Bots</span>
+                <span class="label"></span>
             </div>
             <div class="progress-step">
                 <div class="radial-progress" style="--progress: 0deg;">
                     <div class="progress-inner">?</div>
                 </div>
-                <span class="label">Fetch Bot Badge Data</span>
+                <span class="label"></span>
             </div>
         </div>
     </div>
