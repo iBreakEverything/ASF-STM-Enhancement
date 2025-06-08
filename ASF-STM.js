@@ -1153,7 +1153,7 @@
             }
             // progressBar.currentStep = 1; //FIXME
             // progressBar.currentSubstep = 1;
-            progressBar.radialElements.classList.add('full-blue');
+            progressBar.radialElements[0].classList.add('full-blue');
             progressBar.substeps.push(1);
             updateProgress();
             setTimeout(
