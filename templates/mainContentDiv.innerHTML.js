@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <div style="width: 50%; margin: auto;">
+    <div style="display: flex;flex-direction: column;align-items: center;">
         <div class="progress-container">
             <div class="progress-step">
                 <div class="radial-progress" style="--progress: 0deg;">
