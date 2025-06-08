@@ -12,6 +12,7 @@
 // @match           *://steamcommunity.com/tradeoffer/new/*source=asfstm*
 // @version         {{VERSION}}
 // @connect         asf.justarchi.net
+// @connect         api.steampowered.com
 // @grant           GM.xmlHttpRequest
 // @grant           GM_addStyle
 // @grant           GM_xmlhttpRequest
@@ -29,6 +30,7 @@
     let stop = false;
     let botCacheTime = 5 * 60000;
     let globalSettings = null;
+    let appList = null;
     let blacklist = [];
     let defaultSettings = {
         matchFriends: false,
@@ -248,6 +250,24 @@
         });
     }
 
+    function fetchAppList() {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: 'https://api.steampowered.com/ISteamApps/GetAppList/v2/',
+                onload: (response) => {
+                    try {
+                        const rawAppList = JSON.parse(response.responseText);
+                        appList = rawAppList.applist.apps;
+                        resolve();
+                    } catch (error) {reject(error)}
+                },
+                onerror: (error) => {reject(error)},
+                ontimeout: (error) => {reject(error)}
+            });
+        });
+    }
+
     function ResetConfig() {
         //we won't clear blacklist here!
         globalSettings = deepClone(defaultSettings);
@@ -258,9 +278,13 @@
         localStorage.setItem("Ryzhehvost.ASF.STM.Blacklist", JSON.stringify(blacklist));
     }
 
-    function LoadConfig() {
+    async function LoadConfig() {
+        appList = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.AppList"));
         globalSettings = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Settings"));
         blacklist = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Blacklist"));
+        if (appList === null) {
+            await fetchAppList();
+        }
         if (globalSettings === null) {
             ResetConfig();
         }
@@ -505,7 +529,7 @@
         let mainContentDiv = document.getElementsByClassName("maincontent")[0];
         let newChild = template.content.firstChild;
         newChild.querySelector(`#blacklist_${bots.Result[index].SteamID}`).addEventListener("click", blacklistEventHandler, true);
-        newChild.querySelector(".filter_all").parentNode.addEventListener("click", filterAllEventHandler);
+        newChild.querySelector(".filter_all").addEventListener("click", filterAllEventHandler);
         mainContentDiv.appendChild(newChild);
         checkRow(newChild);
     }
@@ -838,18 +862,6 @@
         }
         debugPrint("populated");  // DEBUG
 
-        /* Add missing titles to scan filters. */
-        let scanFiltersTitlesUpdated = false;
-        globalSettings.scanFilters.forEach(aFilter => {
-            if (aFilter.title === '') {
-                const badge = myBadges.find(aBadge => aBadge.appId == aFilter.appId);
-                if (badge) {
-                    aFilter.title = badge.title;
-                    scanFiltersTitlesUpdated = true;
-                }
-            }
-        });
-
         debugTime("Filter and sort");  // DEBUG
         for (let i = myBadges.length - 1; i >= 0; i--) {
             debugPrint("badge " + i + JSON.stringify(myBadges[i]));  // DEBUG
@@ -873,7 +885,7 @@
 
         /* Remove scan filters from badges without duplicates. */
         if (globalSettings.autoDeleteScanFilters) {
-            const inactiveScanFilters = globalSettings.scanFilters.filter(x => !x.active)
+            const inactiveScanFilters = globalSettings.scanFilters.filter(x => !x.active);
             const activeValidScanFilters = globalSettings.scanFilters.filter(aFilter => aFilter.active && myBadges.find(aBadge => aFilter.appId == aBadge.appId));
             globalSettings.scanFilters = inactiveScanFilters.concat(activeValidScanFilters);
         }
@@ -885,7 +897,7 @@
             globalSettings.scanFilters = globalSettings.scanFilters.concat(newScanFilters);
         }
 
-        if (globalSettings.autoDeleteScanFilters || globalSettings.autoAddScanFilters || scanFiltersTitlesUpdated) {
+        if (globalSettings.autoDeleteScanFilters || globalSettings.autoAddScanFilters) {
             SaveConfig();
         }
 
@@ -1122,6 +1134,27 @@
     }
 
     function getBadges(page) {
+        const activeScanFilters = globalSettings.scanFilters.filter(x => x.active);
+        if (globalSettings.useScanFilters && activeScanFilters.length) {
+            for (let filter of activeScanFilters) {
+                let badgeStub = {
+                    appId: filter.appId,
+                    title: filter.title,
+                    maxCards: 0,
+                    maxSets: 0,
+                    lastSet: 0,
+                    cards: [],
+                };
+                myBadges.push(badgeStub);
+            }
+            setTimeout(
+                function () {
+                    GetOwnCards(0);
+                },
+                globalSettings.weblimiter + globalSettings.errorLimiter * errors,
+            );
+            return;
+        }
         let url = "https://steamcommunity.com/" + myProfileLink + "/badges?p=" + page;
         let xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
@@ -1159,17 +1192,11 @@
                                 let appidSplitted = appidText.split("_");
                                 if (appidSplitted.length >= 5) {
                                     let appId = Number(appidSplitted[4]);
-                                    let maxCards = 0;
-                                    if (badges[i].getElementsByClassName("badge_craft_button").length === 0) {
-                                        let maxCardsText = badges[i].getElementsByClassName("badge_progress_info")[0].innerText.trim();
-                                        let maxCardsSplitted = maxCardsText.split(" ");
-                                        maxCards = Number(maxCardsSplitted[2]);
-                                    }
                                     let title = badges[i].querySelector(".badge_title").childNodes[0].textContent.trim();
                                     let badgeStub = {
                                         appId: appId,
                                         title: title,
-                                        maxCards: maxCards,
+                                        maxCards: 0,
                                         maxSets: 0,
                                         lastSet: 0,
                                         cards: [],
@@ -1205,14 +1232,6 @@
                         stopButton.parentNode.removeChild(stopButton);
                         return;
                     } else {
-                        if (globalSettings.useScanFilters) {
-                            const filters = globalSettings.scanFilters.filter(x => x.active).map(x => Number(x.appId));
-                            debugPrint('scan filters loaded');  // DEBUG
-                            debugPrint(filters);  // DEBUG
-                            if (filters.length) {
-                                myBadges = myBadges.filter(x => filters.includes(x.appId));
-                            }
-                        }
                         setTimeout(
                             function () {
                                 GetOwnCards(0);
@@ -1275,7 +1294,9 @@
         statusElement.style.opacity = 1;
         statusElement.innerText = response.message;
         if (response.success) {
-            const newScanFilter = createScanFilterElement(true, appId, '');
+            const app = appList.find(x => x.appid == appId);
+            const title = app ? app.name : '';
+            const newScanFilter = createScanFilterElement(true, appId, title);
             document.querySelector('#asf-stm-filters').innerHTML += newScanFilter;
             statusElement.style.color = '#88ff88';
         } else {
@@ -1833,7 +1854,7 @@
                 window.setTimeout(checkContexts, 500, globalSettings, global_vars);
             }
         } catch (e) {
-            debugPrint(e);
+            debugPrint(e);  // DEBUG
         }
     }
 })();
