@@ -1439,7 +1439,7 @@
         for (let i = 0; i < progressBar.radialElements.length; i++) {
             progressBar.radialElements[i].classList.remove('full-blue');
             progressBar.radialElements[i].style.setProperty('--progress', '0deg');
-            progressBar.radialElements[i].textContent = '?';
+            progressBar.labelElements[i].textContent = '?';
         }
     }
 
