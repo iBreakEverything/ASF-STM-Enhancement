@@ -124,11 +124,11 @@ input.appid-validity:valid {
 
 .radial-progress {
     position: relative;
-    width: 70px;
-    height: 70px;
+    width: 74px;
+    height: 74px;
     border-radius: 50%;
     /* Use the animatable --progress variable */
-    background: conic-gradient(#4caf50 var(--progress), #333 0deg);
+    background: conic-gradient(#90ba3c var(--progress), #333 0deg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -138,8 +138,8 @@ input.appid-validity:valid {
 
 .progress-inner {
     position: absolute;
-    width: 52px;
-    height: 52px;
+    width: 68px;
+    height: 68px;
     background: #121212;
     border-radius: 50%;
     display: flex;
@@ -152,7 +152,7 @@ input.appid-validity:valid {
 }
 
 .full-blue {
-    background: #2196f3 !important;
+    background: #53a4c4 !important;
     border-radius: 50%;
     transition: none !important;
 }
