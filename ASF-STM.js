@@ -968,6 +968,7 @@
             updateProgress();
         }
         progressBar.currentStep = 3;
+        progressBar.currentSubstep = userindex;
 
         if (index < botBadges.length) {
             let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
