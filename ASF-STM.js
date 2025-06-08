@@ -733,7 +733,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
                 let status = xhr.status;
@@ -779,7 +779,7 @@
                             }
                             hideThrobber();
                             enableButton();
-                            document.querySelector("#asf_stm_stop").hidden = true;
+                            document.querySelector("#asf_stm_stop_div").hidden = true;
                             return;
                         }
                     } catch (error) {
@@ -815,7 +815,7 @@
                     }
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
             };
@@ -825,7 +825,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
                 errors++;
@@ -844,7 +844,7 @@
                     updateMessage("Error getting badge data");
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
             };
@@ -896,7 +896,7 @@
             hideThrobber();
             updateMessage("No cards to match");
             enableButton();
-            document.querySelector("#asf_stm_stop").hidden = true;
+            document.querySelector("#asf_stm_stop_div").hidden = true;
             return;
         } else {
             SaveParams();
@@ -914,7 +914,7 @@
             hideThrobber();
             updateProgress();
             enableButton();
-            document.querySelector("#asf_stm_stop").hidden = true;
+            document.querySelector("#asf_stm_stop_div").hidden = true;
             return;
         }
 
@@ -975,7 +975,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
                 let status = xhr.status;
@@ -1069,7 +1069,7 @@
                     }
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
             };
@@ -1079,7 +1079,7 @@
                     updateMessage("Interrupted by user");
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
                 errors++;
@@ -1098,7 +1098,7 @@
                     updateMessage("Error getting badge data");
                     hideThrobber();
                     enableButton();
-                    document.querySelector("#asf_stm_stop").hidden = true;
+                    document.querySelector("#asf_stm_stop_div").hidden = true;
                     return;
                 }
             };
@@ -1170,7 +1170,7 @@
                 updateMessage("Interrupted by user");
                 hideThrobber();
                 enableButton();
-                document.querySelector("#asf_stm_stop").hidden = true;
+                document.querySelector("#asf_stm_stop_div").hidden = true;
                 return;
             }
             let status = xhr.status;
@@ -1235,7 +1235,7 @@
                         hideThrobber();
                         updateMessage("No cards to match");
                         enableButton();
-                        document.querySelector("#asf_stm_stop").hidden = true;
+                        document.querySelector("#asf_stm_stop_div").hidden = true;
                         return;
                     } else {
                         setTimeout(
@@ -1254,7 +1254,7 @@
                 }
                 hideThrobber();
                 enableButton();
-                document.querySelector("#asf_stm_stop").hidden = true;
+                document.querySelector("#asf_stm_stop_div").hidden = true;
                 return;
             }
         };
@@ -1263,7 +1263,7 @@
                 updateMessage("Interrupted by user");
                 hideThrobber();
                 enableButton();
-                document.querySelector("#asf_stm_stop").hidden = true;
+                document.querySelector("#asf_stm_stop_div").hidden = true;
                 return;
             }
             errors++;
@@ -1281,7 +1281,7 @@
                 updateMessage("Error getting badge page");
                 hideThrobber();
                 enableButton();
-                document.querySelector("#asf_stm_stop").hidden = true;
+                document.querySelector("#asf_stm_stop_div").hidden = true;
                 return;
             }
         };
@@ -1375,7 +1375,7 @@
     }
 
     function stopButtonEvent() {
-        document.querySelector("#asf_stm_stop").hidden = true;
+        document.querySelector("#asf_stm_stop_div").hidden = true;
         updateMessage("Stopping...");
         stop = true;
         progressBar.labelElements[progressBar.currentStep].textContent = '❌';
@@ -1407,7 +1407,7 @@
         document.getElementById("asf_stm_filter_invert").addEventListener("click", filterSwitchesHandler);
         document.getElementById("asf_stm_filters_button").addEventListener("click", filtersButtonEvent, false);
         observer.observe(document.querySelector('#asf_stm_filters_body'), { attributes: true, childList: true, subtree: true });
-        document.querySelector("#asf_stm_stop").hidden = false;
+        document.querySelector("#asf_stm_stop_div").hidden = false;
         resetRadials();
         maxPages = 1;
         stop = false;
@@ -1642,13 +1642,12 @@
         // Stop
         let stopButtonDiv = document.createElement("div");
         stopButtonDiv.setAttribute("class", "profile_small_header_additional");
-        stopButtonDiv.setAttribute("style", "margin-top: 40px; right: 40px");
+        stopButtonDiv.setAttribute("style", "margin-top: 40px;");
         stopButtonDiv.setAttribute("id", "asf_stm_stop_div");
         stopButtonDiv.setAttribute("title", "Stop");
         stopButtonDiv.hidden = true;
         let stopButton = document.createElement("a");
         stopButton.setAttribute("class", "btn_darkred_white_innerfade btn_medium_thin");
-        stopButton.setAttribute("id", "asf_stm_stop");
         stopButton.appendChild(document.createElement("span"));
         stopButton.firstChild.appendChild(document.createTextNode("🛑"));
         stopButtonDiv.appendChild(stopButton);
