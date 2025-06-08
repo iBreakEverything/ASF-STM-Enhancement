@@ -32,6 +32,7 @@
     let globalSettings = null;
     let appList = null;
     let blacklist = [];
+    let progressBar = null;
     let defaultSettings = {
         matchFriends: false,
         anyBots: true,
@@ -343,8 +344,8 @@
     }
 
     function updateMessage(text) {
-        let message = document.getElementById("asf_stm_message");
-        message.textContent = text;
+        // let message = document.getElementById("asf_stm_message");
+        // message.textContent = text;
     }
 
     function hideMessage() {
@@ -357,17 +358,14 @@
         throbber.setAttribute("style", "display: none;");
     }
 
-    function updateProgress(index, total) {
-        const bar = document.getElementById("asf_stm_progress");
-        let progress = 0;
-        if (total > 0) {
-            progress = 100 * ((index + 1) / total);
-        }
-        bar.style.width = `${progress}%`;
-        bar.style.transitionDuration = "0.5s";
-        if (progress === 100) {
-            bar.style.transitionDuration = "0s";
-        }
+    function updateProgress() {
+        const totalSubsteps = progressBar.substeps[progressBar.currentStep];
+        const percent = progressBar.currentSubstep / totalSubsteps;
+        const degrees = percent * 360;
+
+        progressBar.radialElements[currentStep].style.setProperty('--progress', `${degrees}deg`);
+        progressBar.labelElements[progressBar.currentStep].textContent = progressBar.currentSubstep >= totalSubsteps ? '✓' : `${Math.min(progressBar.currentSubstep, totalSubsteps)} / ${totalSubsteps}`;
+        progressBar.currentSubstep++;
     }
 
     function blacklistEventHandler(event) {
@@ -720,12 +718,15 @@
             for (let i = 0; i < myBadges.length; i++) {
                 myBadges[i].cards.length = 0;
             }
+            progressBar.currentStep = 1;
+            progressBar.currentSubstep = 0;
+            progressBar.substeps.push(myBadges.length);
         }
         if (index < myBadges.length) {
             let profileLink;
             profileLink = myProfileLink;
             updateMessage("Getting our data for badge " + (index + 1) + " of " + myBadges.length);
-            updateProgress(index, myBadges.length);
+            updateProgress();
 
             let url = "https://steamcommunity.com/" + profileLink + "/ajaxgetbadgeinfo/" + myBadges[index].appId;
             let xhr = new XMLHttpRequest();
@@ -923,7 +924,7 @@
             debugPrint(new Date(Date.now()));  // DEBUG
             hideThrobber();
             hideMessage();
-            updateProgress(1, 1); // limit reached, fill the bar
+            updateProgress();
             enableButton();
             let stopButton = document.getElementById("asf_stm_stop");
             stopButton.parentNode.removeChild(stopButton);
@@ -953,11 +954,14 @@
             for (let i = 0; i < botBadges.length; i++) {
                 botBadges[i].cards.length = 0;
             }
+            progressBar.currentStep = 2;
+            progressBar.currentSubstep = 0;
+            progressBar.substeps.push(bots.Result.length);
         }
         if (index < botBadges.length) {
             let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
             updateMessage("Fetching bot " + (userindex + 1).toString() + " of " + bots.Result.length.toString() + " (badge " + (index + 1) + " of " + botBadges.length + ")");
-            updateProgress(userindex, bots.Result.length);
+            updateProgress();
 
             let url = "https://steamcommunity.com/" + profileLink + "/gamecards/" + botBadges[index].appId;
             let xhr = new XMLHttpRequest();
@@ -1147,6 +1151,11 @@
                 };
                 myBadges.push(badgeStub);
             }
+            // progressBar.currentStep = 1; //FIXME
+            // progressBar.currentSubstep = 1;
+            progressBar.radialElements.classList.add('full-blue');
+            progressBar.substeps.push(1);
+            updateProgress();
             setTimeout(
                 function () {
                     GetOwnCards(0);
@@ -1178,8 +1187,10 @@
                     if (pageLinks.length > 0) {
                         maxPages = Number(pageLinks[pageLinks.length - 1].textContent.trim());
                     }
+                    progressBar.currentSubstep = 1;
+                    progressBar.substeps.push(maxPages);
                 }
-                updateProgress(page - 1, maxPages); // substract 1 from page number as it starts from 1
+                updateProgress();
                 let badges = xhr.response.documentElement.getElementsByClassName("badge_row_inner");
                 for (let i = 0; i < badges.length; i++) {
                     if (badges[i].getElementsByClassName("owned").length > 0) {
@@ -1407,6 +1418,7 @@
         document.getElementById("asf_stm_filter_invert").addEventListener("click", filterSwitchesHandler);
         document.getElementById("asf_stm_filters_button").addEventListener("click", filtersButtonEvent, false);
         observer.observe(document.querySelector('#asf_stm_filters_body'), { attributes: true, childList: true, subtree: true });
+        resetRadials();
         maxPages = 1;
         stop = false;
         myBadges.length = 0;
@@ -1416,6 +1428,19 @@
             filter: [],
         };
         getBadges(1);
+    }
+
+    function resetRadials() {
+      for (let i = 0; i < totalSteps; i++) {
+        progressBar = {
+            currentStep: 0, currentSubstep: 0, substeps: [],
+            radialElements: [...document.querySelectorAll('.radial-progress')],
+            labelElements: [...document.querySelectorAll('.progress-inner')],
+        };
+        radialEls[i].style.setProperty('--progress', '0deg');
+        radialEls[i].classList.remove('full-blue');
+        labelEls[i].textContent = '?';
+      }
     }
 
     function botSorter(a, b) {

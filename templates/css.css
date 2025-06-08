@@ -106,3 +106,66 @@ input.appid-validity:valid {
 .playerAvatar img.stretch:hover {
     width: 85px;
 }
+
+.progress-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    gap: 1rem;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.radial-progress {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    /* Use the animatable --progress variable */
+    background: conic-gradient(#4caf50 var(--progress), #333 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Animate the --progress variable */
+    transition: --progress 1s ease;
+}
+
+.progress-inner {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    background: #121212;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: #fff;
+    text-align: center;
+}
+
+.full-blue {
+    background: #2196f3 !important;
+    border-radius: 50%;
+    transition: none !important;
+}
+
+.label {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #bbb;
+    text-align: center;
+}
+
+@property --progress {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}

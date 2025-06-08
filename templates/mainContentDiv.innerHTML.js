@@ -10,18 +10,29 @@
         </div>
     </div>
 
-    <div>
-        <div id="asf_stm_messagebox" class="profile_badges_header">
-            <div id="asf_stm_message" class="profile_badges_header_title" style="text-align: center;">Initialization</div>
-        </div>
-    </div>
-
     <div style="width: 100%;">
         <div id="asf_stm_stop" class="btn_darkred_white_innerfade btn_medium_thin" style="float: right;margin-top: -12px;margin-left: 10px;" title="Stop scan">
             <span>🛑</span>
         </div>
-        <div style="width: auto;overflow: hidden;" class="profile_xp_block_remaining_bar">
-            <div id="asf_stm_progress" class="profile_xp_block_remaining_bar_progress" style="width: 100%;transition: width 0.5s ease-in-out 0s"></div>
+        <div class="progress-container">
+            <div class="progress-step">
+                <div class="radial-progress" style="--progress: 0deg;">
+                    <div class="progress-inner">?</div>
+                </div>
+                <span class="label">Scan Badge Pages</span>
+            </div>
+            <div class="progress-step">
+                <div class="radial-progress" style="--progress: 0deg;">
+                    <div class="progress-inner">?</div>
+                </div>
+                <span class="label">Fetch Badge Data</span>
+            </div>
+            <div class="progress-step">
+                <div class="radial-progress" style="--progress: 0deg;">
+                    <div class="progress-inner">?</div>
+                </div>
+                <span class="label">Scan Bots</span>
+            </div>
         </div>
     </div>
 </div>
