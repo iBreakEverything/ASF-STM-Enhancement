@@ -359,13 +359,13 @@
     }
 
     function updateProgress() {
+        progressBar.currentSubstep++;
         const totalSubsteps = progressBar.substeps[progressBar.currentStep];
         const percent = progressBar.currentSubstep / totalSubsteps;
         const degrees = percent * 360;
 
-        progressBar.radialElements[currentStep].style.setProperty('--progress', `${degrees}deg`);
+        progressBar.radialElements[progressBar.currentStep].style.setProperty('--progress', `${degrees}deg`);
         progressBar.labelElements[progressBar.currentStep].textContent = progressBar.currentSubstep >= totalSubsteps ? '✓' : `${Math.min(progressBar.currentSubstep, totalSubsteps)} / ${totalSubsteps}`;
-        progressBar.currentSubstep++;
     }
 
     function blacklistEventHandler(event) {
@@ -948,6 +948,16 @@
             return;
         }
 
+        if (userindex === 0) {
+            progressBar.currentStep = 2;
+            progressBar.currentSubstep = 0;
+            // Number of bots
+            progressBar.substeps.push(bots.Result.length);
+            // Number of badges
+            progressBar.substeps.push(myBadges.length);
+        }
+        
+        // scan bot badge step
         if (index === 0) {
             botBadges.length = 0;
             botBadges = deepClone(myBadges);
@@ -955,9 +965,10 @@
                 botBadges[i].cards.length = 0;
             }
             progressBar.currentStep = 2;
-            progressBar.currentSubstep = 0;
-            progressBar.substeps.push(bots.Result.length);
+            updateProgress();
         }
+        progressBar.currentStep = 3;
+
         if (index < botBadges.length) {
             let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
             updateMessage("Fetching bot " + (userindex + 1).toString() + " of " + bots.Result.length.toString() + " (badge " + (index + 1) + " of " + botBadges.length + ")");
@@ -1151,8 +1162,7 @@
                 };
                 myBadges.push(badgeStub);
             }
-            // progressBar.currentStep = 1; //FIXME
-            // progressBar.currentSubstep = 1;
+            progressBar.currentSubstep = 0;
             progressBar.radialElements[0].classList.add('full-blue');
             progressBar.substeps.push(1);
             updateProgress();

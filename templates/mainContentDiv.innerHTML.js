@@ -33,6 +33,12 @@
                 </div>
                 <span class="label">Scan Bots</span>
             </div>
+            <div class="progress-step">
+                <div class="radial-progress" style="--progress: 0deg;">
+                    <div class="progress-inner">?</div>
+                </div>
+                <span class="label">Fetch Bot Badge Data</span>
+            </div>
         </div>
     </div>
 </div>
