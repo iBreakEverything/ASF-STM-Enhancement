@@ -944,8 +944,11 @@
             debugPrint(bots.Result[userindex].TotalInventoryCount >= globalSettings.botMinItems);  // DEBUG
             debugPrint(globalSettings.botMaxItems > 0 && bots.Result[userindex].TotalInventoryCount <= globalSettings.botMaxItems);  // DEBUG
             debugPrint(blacklist.includes(bots.Result[userindex].SteamID));  // DEBUG
-            GetCards(0, userindex + 1);
-            return;
+            progressBar.currentStep = 3;
+            updateProgress();
+            return function () {
+                GetCards(0, userindex + 1);
+            };
         }
 
         if (userindex === 0) {
@@ -956,7 +959,7 @@
             // Number of badges
             progressBar.substeps.push(myBadges.length);
         }
-        
+
         // scan bot badge step
         if (index === 0) {
             botBadges.length = 0;
@@ -965,10 +968,10 @@
                 botBadges[i].cards.length = 0;
             }
             progressBar.currentStep = 2;
+            progressBar.currentSubstep = userindex;
             updateProgress();
         }
         progressBar.currentStep = 3;
-        progressBar.currentSubstep = userindex;
 
         if (index < botBadges.length) {
             let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
