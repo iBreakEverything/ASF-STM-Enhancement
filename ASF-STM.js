@@ -1431,16 +1431,16 @@
     }
 
     function resetRadials() {
-      for (let i = 0; i < totalSteps; i++) {
         progressBar = {
             currentStep: 0, currentSubstep: 0, substeps: [],
             radialElements: [...document.querySelectorAll('.radial-progress')],
             labelElements: [...document.querySelectorAll('.progress-inner')],
         };
-        radialEls[i].style.setProperty('--progress', '0deg');
-        radialEls[i].classList.remove('full-blue');
-        labelEls[i].textContent = '?';
-      }
+        for (let i = 0; i < progressBar.radialElements.length; i++) {
+            progressBar.radialElements[i].classList.remove('full-blue');
+            progressBar.radialElements[i].style.setProperty('--progress', '0deg');
+            progressBar.radialElements[i].textContent = '?';
+        }
     }
 
     function botSorter(a, b) {
