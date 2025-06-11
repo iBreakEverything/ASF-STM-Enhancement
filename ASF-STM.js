@@ -152,7 +152,7 @@
 
     function createScanFilterElement(active, appId, gameName) {
         return `
-            <div class="friendBlock" style="cursor: auto;">
+            <div id="scan-filter-${appId}" class="friendBlock" style="cursor: auto;">
                 <div class="playerAvatar ${active ? 'ingame' : 'offline'}">
                     <a target="_blank" rel="noopener noreferrer" href="https://steamcommunity.com/${myProfileLink}/gamecards/${appId}/">
                         <img class="stretch" src="https://steamcdn-a.akamaihd.net/steam/apps/${appId}/capsule_184x69.jpg">
@@ -684,7 +684,6 @@
                 myBadges[i].cards.length = 0;
             }
             progressRadials.badges.steps = myBadges.length;
-            progressRadials.botBadges.steps = myBadges.length;
         }
         if (index < myBadges.length) {
             let profileLink;
@@ -704,6 +703,20 @@
                 let status = xhr.status;
                 if (status === 200) {
                     try {
+                        if (Object.keys(xhr.response).length === 1) {
+                            // invalid badge
+                            myBadges.splice(index, 1);
+                            progressRadials.badges.currentStep--;
+                            setTimeout(
+                                (function (index) {
+                                    return function () {
+                                        GetOwnCards(index);
+                                    };
+                                })(index),
+                                globalSettings.weblimiter,
+                            );
+                            return;
+                        }
                         debugPrint("processing badge " + myBadges[index].appId);  // DEBUG
                         if (xhr.response != undefined && xhr.response.eresult == 1) {
                             if (xhr.response.badgedata.rgCards.length >= 5) {
@@ -860,6 +873,10 @@
     function GetCards(index, userindex) {
         debugPrint("GetCards " + index + " : " + userindex);  // DEBUG
 
+        if (index === 0 && userindex === 0) {
+            progressRadials.botBadges.steps = myBadges.length;
+        }
+
         if (userindex >= bots.Result.length) {
             debugPrint("finished");  // DEBUG
             debugPrint(new Date(Date.now()));  // DEBUG
@@ -882,9 +899,8 @@
             debugPrint(globalSettings.botMaxItems > 0 && bots.Result[userindex].TotalInventoryCount <= globalSettings.botMaxItems);  // DEBUG
             debugPrint(blacklist.includes(bots.Result[userindex].SteamID));  // DEBUG
             updateProgress('botBadges');
-            return function () {
-                GetCards(0, userindex + 1);
-            };
+            GetCards(0, userindex + 1);
+            return;
         }
 
         // scan bot badge step
@@ -1227,17 +1243,26 @@
                 url: `https://steamcommunity.com/${myProfileLink}/gamecards/${appId}`,
                 onload: (response) => {
                     try {
-                        const title = response.responseText.split('profile_small_header_location">')[2].split('</span')[0];
+                        const selector = response.responseText.split('profile_small_header_location">')[2];
+                        if (!selector) {
+                            const element = document.querySelector(`#scan-filter-${appId}`);
+                            if (element) {
+                                element.remove();
+                            }
+                            globalSettings.scanFilters = globalSettings.scanFilters.filter(x => x.appId !== appId);
+                            resolve(`Invalid appId: ${appId}`);
+                        }
+                        const title = selector.split('</span')[0];
                         globalSettings.scanFilters.find(x => x.appId == appId).title = title;
                         const anchor = document.querySelector(`#scan-filter-name-${appId}`);
                         if (anchor) {
-                            anchor.textContent = title;
+                            [...anchor.childNodes].find(x => x.nodeType === Node.TEXT_NODE).nodeValue = title;
                         }
                         resolve(title);
-                    } catch (error) {reject(error)}
+                    } catch (error) {reject(error);}
                 },
-                onerror: (error) => {reject(error)},
-                ontimeout: (error) => {reject(error)}
+                onerror: (error) => {reject(error);},
+                ontimeout: (error) => {reject(error);}
             });
         });
     }
@@ -1303,7 +1328,6 @@
 
     function stopButtonEvent() {
         document.querySelector('#asf_stm_stop_div').hidden = true;
-        updateMessage("Stopping...");
         stop = true;
         Object.values(progressRadials).map(x => x.textElement.textContent = '❌');
     }
