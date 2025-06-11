@@ -12,7 +12,6 @@
 // @match           *://steamcommunity.com/tradeoffer/new/*source=asfstm*
 // @version         {{VERSION}}
 // @connect         asf.justarchi.net
-// @connect         api.steampowered.com
 // @grant           GM.xmlHttpRequest
 // @grant           GM_addStyle
 // @grant           GM_xmlhttpRequest
@@ -30,9 +29,13 @@
     let stop = false;
     let botCacheTime = 5 * 60000;
     let globalSettings = null;
-    let appList = null;
     let blacklist = [];
-    let progressBar = null;
+    let progressRadials = {
+        scanPages: {currentStep: 0, steps: 0, radialElement: null, textElement: null},
+        badges: {currentStep: 0, steps: 0, radialElement: null, textElement: null},
+        bots: {currentStep: 0, steps: 0, radialElement: null, textElement: null},
+        botBadges: {currentStep: 0, steps: 0, radialElement: null, textElement: null}
+    };
     let defaultSettings = {
         matchFriends: false,
         anyBots: true,
@@ -155,8 +158,8 @@
                         <img class="stretch" src="https://steamcdn-a.akamaihd.net/steam/apps/${appId}/capsule_184x69.jpg">
                     </a>
                 </div>
-                <div class="friendBlockContent">${gameName}<br>
-                    <input type="checkbox" data-app-id="${appId}" data-title="${gameName}" ${active ? 'checked' : ''}>
+                <div id="scan-filter-name-${appId}" class="friendBlockContent">${gameName}<br>
+                    <input type="checkbox" data-app-id="${appId}" ${active ? 'checked' : ''}>
                 </div>
             </div>
         `.replaceAll(/(  |\n)/g, '');
@@ -233,39 +236,16 @@
                 globalSettings.useScanFilters = configDialog.querySelector("#useScanFilters").checked;
                 globalSettings.autoAddScanFilters = configDialog.querySelector("#autoAddScanFilters").checked;
                 globalSettings.autoDeleteScanFilters = configDialog.querySelector("#autoDeleteScanFilters").checked;
-                globalSettings.scanFilters = Array.from(configDialog.querySelectorAll('input[data-app-id]'), x => ({appId:x.dataset.appId, title:x.dataset.title, active:x.checked}));
+                let filters = Object.fromEntries(Array.from(configDialog.querySelectorAll('input[data-app-id]'), x => [x.dataset.appId, x.checked]));
+                globalSettings.scanFilters.forEach(x => x.active = filters[x.appId]);
                 blacklist = textToArray(configDialog.querySelector("#blacklist").value);
                 SaveConfig();
-                unsafeWindow.ShowConfirmDialog("CONFIRMATION", "Some changes may not work prior to page reload. Do you want to reload the page?").done(function () {
-                    document.location.reload();
-                });
             } else {
                 unsafeWindow.ShowConfirmDialog("CONFIRMATION", "Are you sure you want to restore default settings?").done(function () {
                     ResetConfig();
                     SaveConfig();
-                    unsafeWindow.ShowConfirmDialog("CONFIRMATION", "Some changes may not work prior to page reload. Do you want to reload the page?").done(function () {
-                        document.location.reload();
-                    });
                 });
             }
-        });
-    }
-
-    function fetchAppList() {
-        return new Promise((resolve, reject) => {
-            GM_xmlhttpRequest({
-                method: 'GET',
-                url: 'https://api.steampowered.com/ISteamApps/GetAppList/v2/',
-                onload: (response) => {
-                    try {
-                        const rawAppList = JSON.parse(response.responseText);
-                        appList = rawAppList.applist.apps;
-                        resolve();
-                    } catch (error) {reject(error)}
-                },
-                onerror: (error) => {reject(error)},
-                ontimeout: (error) => {reject(error)}
-            });
         });
     }
 
@@ -279,13 +259,9 @@
         localStorage.setItem("Ryzhehvost.ASF.STM.Blacklist", JSON.stringify(blacklist));
     }
 
-    async function LoadConfig() {
-        appList = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.AppList"));
+    function LoadConfig() {
         globalSettings = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Settings"));
         blacklist = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Blacklist"));
-        if (appList === null) {
-            await fetchAppList();
-        }
         if (globalSettings === null) {
             ResetConfig();
         }
@@ -319,7 +295,7 @@
         if (globalSettings.scanFilters.findIndex(x => x.appId == appId) != -1) {
             return {success: false, message: 'Filter exists'};
         }
-        globalSettings.scanFilters.push({appId: appId, title: '', active: true});
+        globalSettings.scanFilters.push({appId: appId, title: appId, active: true});
         return {success: true, message: 'Added'};
     }
 
@@ -343,24 +319,18 @@
         button.removeEventListener("click", buttonPressedEvent, false);
     }
 
-    function updateMessage(text) {
-        // let message = document.getElementById("asf_stm_message");
-        // message.textContent = text;
-    }
+    function updateProgress(radial) {
+        progressRadials[radial].currentStep++;
+        const totalSteps = progressRadials[radial].steps;
+        const ratio = progressRadials[radial].currentStep / totalSteps;
+        const degrees = ratio * 360;
 
-    function hideThrobber() {
-        let throbber = document.getElementById("throbber");
-        throbber.setAttribute("style", "display: none;");
-    }
-
-    function updateProgress() {
-        progressBar.currentSubstep++;
-        const totalSubsteps = progressBar.substeps[progressBar.currentStep];
-        const percent = progressBar.currentSubstep / totalSubsteps;
-        const degrees = percent * 360;
-
-        progressBar.radialElements[progressBar.currentStep].style.setProperty('--progress', `${degrees}deg`);
-        progressBar.labelElements[progressBar.currentStep].textContent = progressBar.currentSubstep >= totalSubsteps ? '✓' : `${Math.min(progressBar.currentSubstep, totalSubsteps)} / ${totalSubsteps}`;
+        progressRadials[radial].radialElement.style.setProperty('--progress', `${degrees}deg`);
+        if (progressRadials[radial].currentStep >= totalSteps) {
+            progressRadials[radial].textElement.textContent = '✓';
+        } else {
+            progressRadials[radial].textElement.textContent = `${progressRadials[radial].currentStep} / ${totalSteps}`
+        }
     }
 
     function blacklistEventHandler(event) {
@@ -713,15 +683,13 @@
             for (let i = 0; i < myBadges.length; i++) {
                 myBadges[i].cards.length = 0;
             }
-            progressBar.currentStep = 1;
-            progressBar.currentSubstep = 0;
-            progressBar.substeps.push(myBadges.length);
+            progressRadials.badges.steps = myBadges.length;
+            progressRadials.botBadges.steps = myBadges.length;
         }
         if (index < myBadges.length) {
             let profileLink;
             profileLink = myProfileLink;
-            updateMessage("Getting our data for badge " + (index + 1) + " of " + myBadges.length);
-            updateProgress();
+            updateProgress('badges');
 
             let url = "https://steamcommunity.com/" + profileLink + "/ajaxgetbadgeinfo/" + myBadges[index].appId;
             let xhr = new XMLHttpRequest();
@@ -730,10 +698,7 @@
             // eslint-disable-next-line
             xhr.onload = function () {
                 if (stop) {
-                    updateMessage("Interrupted by user");
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    stopEventCleanup('User interrupt');
                     return;
                 }
                 let status = xhr.status;
@@ -773,13 +738,10 @@
                                 errors++;
                             }
                         } else {
-                            updateMessage("Error getting own badge data, badge: " + myBadges[index].appId);
                             if (xhr.response != undefined) {
                                 debugPrint("eresult = " + xhr.response.eresult);  // DEBUG
                             }
-                            hideThrobber();
-                            enableButton();
-                            document.querySelector("#asf_stm_stop_div").hidden = true;
+                            stopEventCleanup(`Badge data fetch error: ${myBadges[index].appId}`);
                             return;
                         }
                     } catch (error) {
@@ -801,7 +763,7 @@
                     );
                 } else {
                     if (status !== 200) {
-                        updateMessage("Error getting badge data, ERROR " + status);
+                        debugPrint(`Error getting badge data: ${status}`);  // DEBUG
                     } else {
                         debugPrint("Error getting own badge data, wrong badge " + myBadges[index].appId);  // DEBUG
                         setTimeout(
@@ -813,19 +775,14 @@
                             globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                         );
                     }
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    stopEventCleanup(`Error getting badge data: ${status}`);
                     return;
                 }
             };
             // eslint-disable-next-line
             xhr.onerror = function () {
                 if (stop) {
-                    updateMessage("Interrupted by user");
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    stopEventCleanup('User interrupt');
                     return;
                 }
                 errors++;
@@ -840,11 +797,8 @@
                     );
                     return;
                 } else {
-                    debugPrint("error");  // DEBUG
-                    updateMessage("Error getting badge data");
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    debugPrint('error fetching badge data: max error rate reached');  // DEBUG
+                    stopEventCleanup('Max error rate reached');
                     return;
                 }
             };
@@ -893,13 +847,11 @@
         }
 
         if (myBadges.length === 0) {
-            hideThrobber();
-            updateMessage("No cards to match");
-            enableButton();
-            document.querySelector("#asf_stm_stop_div").hidden = true;
+            stopEventCleanup('No badges to match');
             return;
         } else {
             SaveParams();
+            progressRadials.bots.steps = bots.Result.length;
             GetCards(0, 0);
             return;
         }
@@ -911,10 +863,8 @@
         if (userindex >= bots.Result.length) {
             debugPrint("finished");  // DEBUG
             debugPrint(new Date(Date.now()));  // DEBUG
-            hideThrobber();
-            updateProgress();
-            enableButton();
-            document.querySelector("#asf_stm_stop_div").hidden = true;
+            updateProgress('bots');
+            stopEventCleanup('Scan completed');
             return;
         }
 
@@ -931,20 +881,10 @@
             debugPrint(bots.Result[userindex].TotalInventoryCount >= globalSettings.botMinItems);  // DEBUG
             debugPrint(globalSettings.botMaxItems > 0 && bots.Result[userindex].TotalInventoryCount <= globalSettings.botMaxItems);  // DEBUG
             debugPrint(blacklist.includes(bots.Result[userindex].SteamID));  // DEBUG
-            progressBar.currentStep = 3;
-            updateProgress();
+            updateProgress('botBadges');
             return function () {
                 GetCards(0, userindex + 1);
             };
-        }
-
-        if (userindex === 0) {
-            progressBar.currentStep = 2;
-            progressBar.currentSubstep = 0;
-            // Number of bots
-            progressBar.substeps.push(bots.Result.length);
-            // Number of badges
-            progressBar.substeps.push(myBadges.length);
         }
 
         // scan bot badge step
@@ -954,16 +894,13 @@
             for (let i = 0; i < botBadges.length; i++) {
                 botBadges[i].cards.length = 0;
             }
-            progressBar.currentStep = 2;
-            progressBar.currentSubstep = userindex;
-            updateProgress();
+            progressRadials.botBadges.currentStep = 0;
+            updateProgress('bots');
         }
-        progressBar.currentStep = 3;
 
         if (index < botBadges.length) {
             let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
-            updateMessage("Fetching bot " + (userindex + 1).toString() + " of " + bots.Result.length.toString() + " (badge " + (index + 1) + " of " + botBadges.length + ")");
-            updateProgress();
+            updateProgress('botBadges');
 
             let url = "https://steamcommunity.com/" + profileLink + "/gamecards/" + botBadges[index].appId;
             let xhr = new XMLHttpRequest();
@@ -972,10 +909,7 @@
             // eslint-disable-next-line
             xhr.onload = function () {
                 if (stop) {
-                    updateMessage("Interrupted by user");
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    stopEventCleanup('User interrupt');
                     return;
                 }
                 let status = xhr.status;
@@ -1055,7 +989,7 @@
                     );
                 } else {
                     if (status !== 200) {
-                        updateMessage("Error getting badge data, ERROR " + status);
+                        debugPrint(`Error getting badge data: ${status}`);  // DEBUG
                     } else {
                         debugPrint("Error getting badge data, malformed HTML. Ignoring badge " + botBadges[index].appId);  // DEBUG
                         setTimeout(
@@ -1067,19 +1001,14 @@
                             globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                         );
                     }
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    stopEventCleanup(`Error getting badge data: ${status}`);
                     return;
                 }
             };
             // eslint-disable-next-line
             xhr.onerror = function () {
                 if (stop) {
-                    updateMessage("Interrupted by user");
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    stopEventCleanup('User interrupt');
                     return;
                 }
                 errors++;
@@ -1094,11 +1023,8 @@
                     );
                     return;
                 } else {
-                    debugPrint("error");  // DEBUG
-                    updateMessage("Error getting badge data");
-                    hideThrobber();
-                    enableButton();
-                    document.querySelector("#asf_stm_stop_div").hidden = true;
+                    debugPrint('error fetching bot badge: max error rate reached');  // DEBUG
+                    stopEventCleanup('Max error rate reached');
                     return;
                 }
             };
@@ -1149,10 +1075,9 @@
                 };
                 myBadges.push(badgeStub);
             }
-            progressBar.currentSubstep = 0;
-            progressBar.radialElements[0].classList.add('full-blue');
-            progressBar.substeps.push(1);
-            updateProgress();
+            progressRadials.scanPages.steps = 1;
+            progressRadials.scanPages.radialElement.classList.add('full-blue');
+            updateProgress('scanPages');
             setTimeout(
                 function () {
                     GetOwnCards(0);
@@ -1167,26 +1092,21 @@
         xhr.responseType = "document";
         xhr.onload = function () {
             if (stop) {
-                updateMessage("Interrupted by user");
-                hideThrobber();
-                enableButton();
-                document.querySelector("#asf_stm_stop_div").hidden = true;
+                stopEventCleanup('User interrupt');
                 return;
             }
             let status = xhr.status;
             if (status === 200) {
                 errors = 0;
                 debugPrint("processing page " + page);  // DEBUG
-                updateMessage("Processing badges page " + page);
                 if (page === 1) {
                     let pageLinks = xhr.response.documentElement.getElementsByClassName("pagelink");
                     if (pageLinks.length > 0) {
                         maxPages = Number(pageLinks[pageLinks.length - 1].textContent.trim());
                     }
-                    progressBar.currentSubstep = 1;
-                    progressBar.substeps.push(maxPages);
+                    progressRadials.scanPages.steps = maxPages;
                 }
-                updateProgress();
+                updateProgress('scanPages');
                 let badges = xhr.response.documentElement.getElementsByClassName("badge_row_inner");
                 for (let i = 0; i < badges.length; i++) {
                     if (badges[i].getElementsByClassName("owned").length > 0) {
@@ -1232,10 +1152,7 @@
                     debugPrint("all badge pages processed");  // DEBUG
                     debugPrint(globalSettings.weblimiter + globalSettings.errorLimiter * errors);  // DEBUG
                     if (myBadges.length === 0) {
-                        hideThrobber();
-                        updateMessage("No cards to match");
-                        enableButton();
-                        document.querySelector("#asf_stm_stop_div").hidden = true;
+                        stopEventCleanup('No badges to match');
                         return;
                     } else {
                         setTimeout(
@@ -1248,22 +1165,17 @@
                 }
             } else {
                 if (status !== 200) {
-                    updateMessage("Error getting badge page, ERROR " + status);
+                    debugPrint(`Error getting badge page: ${status}`);  // DEBUG
                 } else {
-                    updateMessage("Error getting badge page, malformed HTML");
+                    debugPrint('Error getting badge page, malformed HTML');  // DEBUG
                 }
-                hideThrobber();
-                enableButton();
-                document.querySelector("#asf_stm_stop_div").hidden = true;
+                stopEventCleanup('error feting badges page: request error');
                 return;
             }
         };
         xhr.onerror = function () {
             if (stop) {
-                updateMessage("Interrupted by user");
-                hideThrobber();
-                enableButton();
-                document.querySelector("#asf_stm_stop_div").hidden = true;
+                stopEventCleanup('User interrupt');
                 return;
             }
             errors++;
@@ -1277,11 +1189,8 @@
                     globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                 );
             } else {
-                debugPrint("error getting badge page");  // DEBUG
-                updateMessage("Error getting badge page");
-                hideThrobber();
-                enableButton();
-                document.querySelector("#asf_stm_stop_div").hidden = true;
+                debugPrint('error feting badges page: max error rate reached');  // DEBUG
+                stopEventCleanup('Max error rate reached');
                 return;
             }
         };
@@ -1291,15 +1200,14 @@
     function addScanFilterEventHandler() {
         const appIdBox = document.querySelector('#addScanFilterAppId');
         const appId = appIdBox.value;
-        let response = AddScanFilter(appId);
+        const response = AddScanFilter(appId);
+        updateScanFilterAppName(appId);
         const statusElement = document.querySelector('#addScanFilterStatus');
         statusElement.style.transition = null;
         statusElement.style.opacity = 1;
         statusElement.innerText = response.message;
         if (response.success) {
-            const app = appList.find(x => x.appid == appId);
-            const title = app ? app.name : '';
-            const newScanFilter = createScanFilterElement(true, appId, title);
+            const newScanFilter = createScanFilterElement(true, appId, appId);
             document.querySelector('#asf-stm-filters').innerHTML += newScanFilter;
             statusElement.style.color = '#88ff88';
         } else {
@@ -1312,13 +1220,32 @@
         }, 0);
     }
 
+    function updateScanFilterAppName(appId) {
+        return new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url: `https://steamcommunity.com/${myProfileLink}/gamecards/${appId}`,
+                onload: (response) => {
+                    try {
+                        const title = response.responseText.split('profile_small_header_location">')[2].split('</span')[0];
+                        globalSettings.scanFilters.find(x => x.appId == appId).title = title;
+                        const anchor = document.querySelector(`#scan-filter-name-${appId}`);
+                        if (anchor) {
+                            anchor.textContent = title;
+                        }
+                        resolve(title);
+                    } catch (error) {reject(error)}
+                },
+                onerror: (error) => {reject(error)},
+                ontimeout: (error) => {reject(error)}
+            });
+        });
+    }
+
     function clearScanFiltersEventHandler() {
         ResetScanFilters();
         unsafeWindow.ShowConfirmDialog("CONFIRMATION", "Are you sure you want to clear all scan filters?").done(function () {
             SaveConfig();
-            unsafeWindow.ShowConfirmDialog("CONFIRMATION", "Reload the page for these changes to take effect. Do you want to reload the page?").done(function () {
-                document.location.reload();
-            });
         });
     }
 
@@ -1375,10 +1302,18 @@
     }
 
     function stopButtonEvent() {
-        document.querySelector("#asf_stm_stop_div").hidden = true;
+        document.querySelector('#asf_stm_stop_div').hidden = true;
         updateMessage("Stopping...");
         stop = true;
-        progressBar.labelElements[progressBar.currentStep].textContent = '❌';
+        Object.values(progressRadials).map(x => x.textElement.textContent = '❌');
+    }
+
+    function stopEventCleanup(reason) {
+        // Hide throbber
+        document.querySelector('#throbber').style.display = 'none';
+        enableButton();
+        document.querySelector('#asf_stm_stop_div').hidden = true;
+        console.log(`Stopping: ${reason}`);
     }
 
     function buttonPressedEvent() {
@@ -1407,7 +1342,7 @@
         document.getElementById("asf_stm_filter_invert").addEventListener("click", filterSwitchesHandler);
         document.getElementById("asf_stm_filters_button").addEventListener("click", filtersButtonEvent, false);
         observer.observe(document.querySelector('#asf_stm_filters_body'), { attributes: true, childList: true, subtree: true });
-        document.querySelector("#asf_stm_stop_div").hidden = false;
+        document.querySelector('#asf_stm_stop_div').hidden = false;
         resetRadials();
         maxPages = 1;
         stop = false;
@@ -1421,31 +1356,42 @@
     }
 
     function resetRadials() {
-        const labels = document.querySelectorAll('.progress-step > .label');
-
-        if (globalSettings.useScanFilters && globalSettings.scanFilters.filter(x => x.active)) {
-            labels[0].textContent = 'Filters';
-        } else {
-            labels[0].textContent = 'Badge Pages';
-        }
-
-        if (globalSettings.matchFriends) {
-            labels[2].textContent = 'Friends';
-            labels[3].textContent = 'Friend Badges';
-        } else {
-            labels[2].textContent = 'Bots';
-            labels[3].textContent = 'Bot Badges';
-        }
-
-        progressBar = {
-            currentStep: 0, currentSubstep: 0, substeps: [],
-            radialElements: [...document.querySelectorAll('.radial-progress')],
-            labelElements: [...document.querySelectorAll('.progress-inner')],
+        progressRadials = {
+            scanPages: {
+                currentStep: 0,
+                steps: 0,
+                radialElement: document.querySelector('#scan-pages-radial'),
+                textElement: document.querySelector('#scan-pages-text'),
+            },
+            badges: {
+                currentStep: 0,
+                steps: 0,
+                radialElement: document.querySelector('#scan-badges-radial'),
+                textElement: document.querySelector('#scan-badges-text'),
+            },
+            bots: {
+                currentStep: 0,
+                steps: 0,
+                radialElement: document.querySelector('#scan-bots-radial'),
+                textElement: document.querySelector('#scan-bots-text'),
+            },
+            botBadges: {
+                currentStep: 0,
+                steps: 0,
+                radialElement: document.querySelector('#bots-badges-radial'),
+                textElement: document.querySelector('#bots-badges-text'),
+            },
         };
-        for (let i = 0; i < progressBar.radialElements.length; i++) {
-            progressBar.radialElements[i].classList.remove('full-blue');
-            progressBar.radialElements[i].style.setProperty('--progress', '0deg');
-            progressBar.labelElements[i].textContent = '?';
+
+        const radialElements = [...document.querySelectorAll('.radial-progress')];
+        for (let radialElement of radialElements) {
+            radialElement.classList.remove('full-blue');
+            radialElement.style.setProperty('--progress', '0deg');
+        }
+
+        const textElements = [...document.querySelectorAll('.progress-inner')];
+        for (let textElement of textElements) {
+            textElement.textContent = '?';
         }
     }
 
