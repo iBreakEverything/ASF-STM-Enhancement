@@ -79,10 +79,10 @@ def main():
         script = script.replace(placeholder, content)
 
 
-    with open(DEBUG_FILE, 'w', encoding='utf8') as f:
+    with open(DEBUG_FILE, 'w', encoding='utf8', newline='\n') as f:
         f.write(script.replace('  // DEBUG', ''))
 
-    with open(RELEASE_FILE, 'w', encoding='utf8') as f:
+    with open(RELEASE_FILE, 'w', encoding='utf8', newline='\n') as f:
         release_script = '\n'.join([x for x in script.split('\n') if not x.endswith('// DEBUG')])
         f.write(release_script)
 

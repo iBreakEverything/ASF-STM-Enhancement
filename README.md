@@ -20,6 +20,11 @@ It does what the original [ASF-STM (by Rudokhvist)](https://github.com/Rudokhvis
 ## Changelog
 Version | Date | Info
 :-: | :-: | :-
+v5.7.2 | 2025-06-29 | Solve private inventories scans
+v5.7.1 | 2025-06-29 | Fix scan filter bugs
+v5.7.0 | 2025-06-11 | Massive improvements to Scan Filters, Stop logic and progress bar
+\*v5.6.x | 2025-06-08 | WIP new visual progress bar
+\*v5.5.x | 2025-06-08 | Experimental ISteamApps/GetAppList filters fething
 v5.4.0 | 2025-03-25 | User file and debug file
 v5.3.1 | 2025-03-25 | Filter match count
 v5.3.0 | 2025-03-25 | Critical bug fix #37

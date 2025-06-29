@@ -931,13 +931,15 @@
                 let status = xhr.status;
                 if (status === 200) {
                     debugPrint("processing badge " + botBadges[index].appId);  // DEBUG
-                    if (null !== xhr.response.documentElement.querySelector("body.private_profile")
-                    || (globalSettings.matchFriends && null === xhr.response.documentElement.querySelector(".badge_card_set_cards"))) {
-                        if (globalSettings.matchFriends) {
+                    if (null === xhr.response.documentElement.querySelector(".badge_card_set_cards")) {
+                        if (globalSettings.matchFriends) {  // DEBUG
                             debugPrint("friend has inventory set to friends-only (badges are private):" + bots.Result[userindex].SteamID);  // DEBUG
-                        } else {
+                        } else {  // DEBUG
                             debugPrint("bot has private profile:" + bots.Result[userindex].SteamID);  // DEBUG
-                        }
+                        }  // DEBUG
+                        // Blacklist private users, saves time
+                        blacklist.push(bots.Result[userindex].SteamIDText);
+                        SaveConfig();
                         setTimeout(
                             (function (index, userindex) {
                                 return function () {
@@ -987,8 +989,10 @@
                         );
                         return;
                     } else {
-                        //if can't find any cards on badge page - retry, that's must be a bug.
+                        // private inventory?
                         debugPrint(xhr.response.documentElement.outerHTML);  // DEBUG
+                        const elemCount = xhr.response.documentElement.querySelectorAll('.badge_detail_tasks').length;  // DEBUG
+                        debugPrint(`elemCount = ${elemCount} (1?)`);  // DEBUG
                         errors++;
                     }
                 } else {
