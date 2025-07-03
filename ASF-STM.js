@@ -237,7 +237,7 @@
                 globalSettings.autoAddScanFilters = configDialog.querySelector("#autoAddScanFilters").checked;
                 globalSettings.autoDeleteScanFilters = configDialog.querySelector("#autoDeleteScanFilters").checked;
                 let filters = Object.fromEntries(Array.from(configDialog.querySelectorAll('input[data-app-id]'), x => [x.dataset.appId, x.checked]));
-                globalSettings.scanFilters.forEach(x => x.active = filters[x.appId]);
+                globalSettings.scanFilters.forEach(x => {x.active = filters[x.appId]});
                 blacklist = textToArray(configDialog.querySelector("#blacklist").value);
                 SaveConfig();
             } else {
@@ -938,7 +938,7 @@
                             debugPrint("bot has private profile:" + bots.Result[userindex].SteamID);  // DEBUG
                         }  // DEBUG
                         // Blacklist private users, saves time
-                        blacklist.push(bots.Result[userindex].SteamIDText);
+                        blacklist.push(bots.Result[userindex].SteamID);
                         SaveConfig();
                         setTimeout(
                             (function (index, userindex) {
@@ -1333,7 +1333,7 @@
     function stopButtonEvent() {
         document.querySelector('#asf_stm_stop_div').hidden = true;
         stop = true;
-        Object.values(progressRadials).map(x => x.textElement.textContent = '❌');
+        Object.values(progressRadials).map(x => {x.textElement.textContent = '❌'});
     }
 
     function stopEventCleanup(reason) {
