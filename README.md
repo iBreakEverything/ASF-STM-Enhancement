@@ -1,7 +1,24 @@
 # ASF-STM userscript
 
 ## Installation
-To install this script, go to [the latest release](https://github.com/iBreakEverything/ASF-STM-Enhancement/releases/latest) and click on "ASF-STM.user.js" entry in assets.
+Install [Tampermonkey](https://www.tampermonkey.net/) for your browser.
+Go to [the latest release](https://github.com/iBreakEverything/ASF-STM-Enhancement/releases/latest) and click on **ASF-STM.user.js** entry in assets.
+
+## Usage
+* [Install](https://github.com/iBreakEverything/ASF-STM-Enhancement?tab=readme-ov-file#installation) the script.
+* Navigate to [your Steam badges](https://steamcommunity.com/my/badges/) page.
+  * **Optional**: Match with your friends
+    1. Click on ⚙️ button.
+    2. Check `Match with friends` checkbox.
+    3. Click Save.
+  * **Advanced**: Scan Filters
+    1. Click on ⚙️ button.
+    2. Go to `Scan filters` tab.
+    3. Insert appId of desired badge you want to match.
+    4. Click Save.
+* Click on `Scan ASF STM` button, right to your avatar.
+* Wait for initial scan to complete.
+* Scan results will start to pop up. Offer a trade for each badge, offer a trade for all or filter the results and offer a trade for all remaining.
 
 ## Description
 It does what the original [ASF-STM (by Rudokhvist)](https://github.com/Rudokhvist/ASF-STM) script does with some extra features.
