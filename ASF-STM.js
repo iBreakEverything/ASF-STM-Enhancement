@@ -60,6 +60,7 @@
         scanFilters: [],
         autoAddScanFilters: true,
         autoDeleteScanFilters: true,
+        includeSingleCards: false
     };
     let cardNames = new Set();
     let tradeParams = {
@@ -236,6 +237,7 @@
                 globalSettings.useScanFilters = configDialog.querySelector("#useScanFilters").checked;
                 globalSettings.autoAddScanFilters = configDialog.querySelector("#autoAddScanFilters").checked;
                 globalSettings.autoDeleteScanFilters = configDialog.querySelector("#autoDeleteScanFilters").checked;
+                globalSettings.includeSingleCards = configDialog.querySelector("#includeSingleCards").checked;
                 let filters = Object.fromEntries(Array.from(configDialog.querySelectorAll('input[data-app-id]'), x => [x.dataset.appId, x.checked]));
                 globalSettings.scanFilters.forEach(x => {x.active = filters[x.appId]});
                 blacklist = textToArray(configDialog.querySelector("#blacklist").value);
@@ -501,7 +503,7 @@
         //state 0 - less than max sets; state 1 - we have max sets, even out the rest, state 2 - all even
         debugPrint("maxSets=" + badge.maxSets + " LastSet=" + badge.lastSet + " Max cards=" + badge.cards[badge.maxCards - 1].count + " Min cards=" + badge.cards[0].count);  // DEBUG
         if (badge.cards[badge.maxCards - 1].count === badge.maxSets) {
-            if (badge.cards[0].count === badge.lastSet) {
+            if (badge.cards[0].count === badge.lastSet && !globalSettings.includeSingleCards) {
                 return 2; //nothing to do
             } else {
                 return 1; //max sets are here, but we can distribute cards further
@@ -535,7 +537,7 @@
                     tradeParams.matches[partner][itemsToReceive[i].appId].receive.push(cardID);
                 }
             }
-            if (tradeParams.matches[partner][itemsToReceive[i].appId].send.length !== tradeParams.matches[partner][itemsToReceive[i].appId].receive.length) {
+            if (tradeParams.matches[partner][itemsToReceive[i].appId].send.length !== tradeParams.matches[partner][itemsToReceive[i].appId].receive.length && !globalSettings.includeSingleCards) {
                 throw new Error("Sent and received card count don't match for " + tradeParams.matches[partner][itemsToReceive[i].appId] + " !");
             }
         }
@@ -572,7 +574,7 @@
                                 //index of card we give
                                 debugPrint("i=" + i + " j=" + j + " k=" + k + " myState=" + myState);  // DEBUG
                                 debugPrint("we have this: " + myBadge.cards[k].item + " (" + myBadge.cards[k].count + ")");  // DEBUG
-                                if ((myState === 0 && myBadge.cards[k].count > myBadge.maxSets) || (myState === 1 && myBadge.cards[k].count > myBadge.lastSet)) {
+                                if ((myState === 0 && myBadge.cards[k].count > myBadge.maxSets) || (myState === 1 && myBadge.cards[k].count > myBadge.lastSet) || (globalSettings.includeSingleCards && myBadge.cards[k].count > 0)) {
                                     //that's fine for us
                                     debugPrint("it's a good trade for us");  // DEBUG
                                     let theirInd = theirBadge.cards.findIndex((a) => a.number === myBadge.cards[k].number); //index of slot where they will receive card
@@ -610,14 +612,16 @@
                                         let existingCard = sendmatch.cards.find((a) => a.hash === itemToSend.hash);
                                         if (existingCard === undefined) {
                                             sendmatch.cards.push(itemToSend);
-                                        } else {
+                                        } else if (!globalSettings.includeSingleCards) {
                                             existingCard.count += 1;
                                         }
                                     }
-                                    //add this item to their inventory
-                                    theirBadge.cards[theirInd].count += 1;
-                                    //remove this item from our inventory
-                                    myBadge.cards[k].count -= 1;
+                                    if (!globalSettings.includeSingleCards) {
+                                        //add this item to their inventory
+                                        theirBadge.cards[theirInd].count += 1;
+                                        //remove this item from our inventory
+                                        myBadge.cards[k].count -= 1;
+                                    }
 
                                     //fill items to receive
                                     let receiveMatch = itemsToReceive.find((item) => item.appId == myBadge.appId);
@@ -632,12 +636,14 @@
                                         let existingCard = receiveMatch.cards.find((a) => a.hash === itemToReceive.hash);
                                         if (existingCard === undefined) {
                                             receiveMatch.cards.push(itemToReceive);
-                                        } else {
+                                        } else if (!globalSettings.includeSingleCards) {
                                             existingCard.count += 1;
                                         }
                                     }
-                                    //add this item to our inventory
-                                    myBadge.cards[myInd].count += 1;
+                                    if (!globalSettings.includeSingleCards) {
+                                        //add this item to our inventory
+                                        myBadge.cards[myInd].count += 1;
+                                    }
                                     //remove this item from their inventory
                                     theirBadge.cards[j].count -= 1;
                                     foundMatch = true;
@@ -825,7 +831,7 @@
             debugPrint("badge " + i + JSON.stringify(myBadges[i]));  // DEBUG
 
             myBadges[i].cards.sort((a, b) => b.count - a.count);
-            if (myBadges[i].cards[0].count - myBadges[i].cards[myBadges[i].cards.length - 1].count < 2) {
+            if (myBadges[i].cards[0].count - myBadges[i].cards[myBadges[i].cards.length - 1].count < 2 && !globalSettings.includeSingleCards) {
                 //nothing to match, remove from list.
                 myBadges.splice(i, 1);
                 continue;

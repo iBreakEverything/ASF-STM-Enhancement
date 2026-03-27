@@ -178,6 +178,12 @@
                     <a class="tooltip hover_tooltip" data-tooltip-text="Delete scan filters from badges without duplicates.">
                         <img src="${questionmarkURL}">
                     </a>
+                    <br>
+                    <span class="asf-stm-margin-right">Include own single cards in scan</span>
+                    <input type="checkbox" id="includeSingleCards" ${globalSettings.includeSingleCards ? 'checked' : ''} class="asf-stm-checkbox">
+                    <a class="tooltip hover_tooltip" data-tooltip-text="Also scan for possible trades with cards you only have one copy of. This most likely only makes sense if you filter for specific games.">
+                        <img src="${questionmarkURL}">
+                    </a>
                 </div>
             </fieldset>
 
