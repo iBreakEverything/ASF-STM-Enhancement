@@ -566,10 +566,13 @@
                     if (theirBadge.cards[j].count > 0) {
                         //try to match
                         let myInd = myBadge.cards.findIndex((a) => a.number === theirBadge.cards[j].number); //index of slot where we receive card
-                        if ((myState === 0 && myBadge.cards[myInd].count < myBadge.maxSets) || (myState === 1 && myBadge.cards[myInd].count < myBadge.lastSet)) {
+                        if ((myState === 0 && myBadge.cards[myInd].count < myBadge.maxSets) || (myState === 1 && myBadge.cards[myInd].count < myBadge.lastSet) || globalSettings.includeSingleCards) {
                             //we need this ^Kfor the Emperor
                             debugPrint("we need this: " + theirBadge.cards[j].item + " (" + theirBadge.cards[j].count + ")");  // DEBUG
                             //find a card to match.
+                            if (globalSettings.includeSingleCards) {
+                                myInd = myBadge.maxCards; //try to match with every card
+                            }
                             for (let k = 0; k < myInd; k++) {
                                 //index of card we give
                                 debugPrint("i=" + i + " j=" + j + " k=" + k + " myState=" + myState);  // DEBUG
@@ -643,11 +646,11 @@
                                     if (!globalSettings.includeSingleCards) {
                                         //add this item to our inventory
                                         myBadge.cards[myInd].count += 1;
+                                        //remove this item from their inventory
+                                        theirBadge.cards[j].count -= 1;
+                                        foundMatch = true;
+                                        break; //found a match!
                                     }
-                                    //remove this item from their inventory
-                                    theirBadge.cards[j].count -= 1;
-                                    foundMatch = true;
-                                    break; //found a match!
                                 }
                             }
                             if (foundMatch) {
