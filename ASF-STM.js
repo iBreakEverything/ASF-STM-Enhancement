@@ -1823,7 +1823,7 @@
         ///// STM functions /////
 
         try {
-            if (window.location.href.includes("source=asfstm")) {
+            if (window.location.href.includes("source=asfstm") && !globalSettings.includeSingleCards) {
                 LoadConfig();
                 let params = LoadParams();
 
