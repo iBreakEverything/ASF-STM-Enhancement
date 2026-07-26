@@ -2,9 +2,8 @@
 // @name            ASF STM
 // @namespace       https://greasyfork.org/users/2205
 // @description     ASF bot list trade matcher
-// @description:vi  Trình khớp lệnh giao dịch danh sách bot ASF
 // @license         Apache-2.0
-// @author          Rudokhvist
+// @author          Rudokhvist, iBreakEverything
 // @match           *://steamcommunity.com/id/*/badges
 // @match           *://steamcommunity.com/id/*/badges/
 // @match           *://steamcommunity.com/profiles/*/badges
