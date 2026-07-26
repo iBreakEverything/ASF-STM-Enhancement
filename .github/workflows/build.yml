@@ -26,9 +26,9 @@ jobs:
         run: echo "PREVIOUS_COMMIT_HASH=$(git rev-parse HEAD^)" >> $GITHUB_ENV
       - name: Set env
         run: |
-          VERSION=$(cat templates/version)
+          VERSION=$(cat src/templates/version)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          LATEST_RELEASE_VERSION=$(git show $PREVIOUS_COMMIT_HASH:templates/version)
+          LATEST_RELEASE_VERSION=$(git show $PREVIOUS_COMMIT_HASH:src/templates/version)
           if [ -z "$LATEST_RELEASE_VERSION" ]; then
             LATEST_RELEASE_VERSION="0.0"
           fi
@@ -43,7 +43,7 @@ jobs:
           CURRENT_COMMIT_VERSION=$LATEST_RELEASE_VERSION
           while IFS= read -r COMMIT; do
             COMMIT_SHA=$(echo $COMMIT | cut -c3-9)
-            COMMIT_VERSION=$(git show $COMMIT_SHA:templates/version)
+            COMMIT_VERSION=$(git show $COMMIT_SHA:src/templates/version)
             if [ "$CURRENT_COMMIT_VERSION" != "$COMMIT_VERSION" ]; then
               CURRENT_COMMIT_VERSION=$COMMIT_VERSION
               echo "# $CURRENT_COMMIT_VERSION"  >> commit_history.md
@@ -60,7 +60,7 @@ jobs:
           body_path: commit_history.md
           draft: true
           files: |
-            ASF-STM.user.js
-            ASF-STM.debug.js
+            dist/ASF-STM.user.js
+            dist/ASF-STM.debug.js
           name: ASF-STM-plus V${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}

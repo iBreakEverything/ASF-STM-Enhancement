@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name            ASF STM
-// @namespace       https://greasyfork.org/users/2205
+// @name            ASF STM Enhancement
+// @namespace       https://greasyfork.org/users/738914
 // @description     ASF bot list trade matcher
 // @license         Apache-2.0
-// @author          Rudokhvist, iBreakEverything
+// @author          Rudokhvist
+// @author          iBreakEverything
 // @match           *://steamcommunity.com/id/*/badges
 // @match           *://steamcommunity.com/id/*/badges/
 // @match           *://steamcommunity.com/profiles/*/badges
