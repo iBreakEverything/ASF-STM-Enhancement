@@ -2,9 +2,9 @@ import os
 import re
 
 REPO_ROOT = os.path.abspath('./')
+DIST_DIR = os.path.join(REPO_ROOT, 'dist')
 SRC_DIR = os.path.join(REPO_ROOT, 'src')
-DIST_DIR = os.path.join(SRC_DIR, 'dist')
-TEMPLATES_DIR = os.path.join(REPO_ROOT, 'templates')
+TEMPLATES_DIR = os.path.join(SRC_DIR, 'templates')
 
 USERSCRIPT_FILE = os.path.join(SRC_DIR, 'ASF-STM.js')
 RELEASE_FILE = os.path.join(DIST_DIR, 'ASF-STM.user.js')
