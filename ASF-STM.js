@@ -870,7 +870,7 @@
         }
     }
 
-    function GetCards(index, userindex) {
+    function GetCards(index, userindex, idLink) {
         debugPrint("GetCards " + index + " : " + userindex);  // DEBUG
 
         if (index === 0 && userindex === 0) {
@@ -919,7 +919,7 @@
             let profileLink = globalSettings.matchFriends ? `${bots.Result[userindex].SteamIDText}` : `profiles/${bots.Result[userindex].SteamID}`;
             updateProgress('botBadges');
 
-            let url = "https://steamcommunity.com/" + profileLink + "/gamecards/" + botBadges[index].appId;
+            let url = `https://steamcommunity.com/${idLink ?? profileLink}/gamecards/${botBadges[index].appId}`;
             let xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.responseType = "document";
@@ -980,13 +980,15 @@
                             botBadges[index].cards.push(newcard);
                         }
 
+                        idLink ??= xhr.responseURL.match(/(id\/.+?)\//)?.[1];
+
                         index++;
                         setTimeout(
-                            (function (index, userindex) {
+                            (function (index, userindex, idLink) {
                                 return function () {
-                                    GetCards(index, userindex);
+                                    GetCards(index, userindex, idLink);
                                 };
-                            })(index, userindex),
+                            })(index, userindex, idLink),
                             globalSettings.weblimiter,
                         );
                         return;
@@ -1002,11 +1004,11 @@
                 }
                 if ((status < 400 || status >= 500) && errors <= globalSettings.maxErrors) {
                     setTimeout(
-                        (function (index, userindex) {
+                        (function (index, userindex, idLink) {
                             return function () {
-                                GetCards(index, userindex);
+                                GetCards(index, userindex, idLink);
                             };
-                        })(index, userindex),
+                        })(index, userindex, idLink),
                         globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                     );
                 } else {
@@ -1015,11 +1017,11 @@
                     } else {
                         debugPrint("Error getting badge data, malformed HTML. Ignoring badge " + botBadges[index].appId);  // DEBUG
                         setTimeout(
-                            (function (index, userindex) {
+                            (function (index, userindex, idLink) {
                                 return function () {
-                                    GetCards(index, userindex);
+                                    GetCards(index, userindex, idLink);
                                 };
-                            })(index, userindex),
+                            })(index, userindex, idLink),
                             globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                         );
                     }
@@ -1036,11 +1038,11 @@
                 errors++;
                 if (errors <= globalSettings.maxErrors) {
                     setTimeout(
-                        (function (index, userindex) {
+                        (function (index, userindex, idLink) {
                             return function () {
-                                GetCards(index, userindex);
+                                GetCards(index, userindex, idLink);
                             };
-                        })(index, userindex),
+                        })(index, userindex, idLink),
                         globalSettings.weblimiter + globalSettings.errorLimiter * errors,
                     );
                     return;
