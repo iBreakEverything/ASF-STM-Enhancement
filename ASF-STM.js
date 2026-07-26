@@ -898,6 +898,7 @@
             debugPrint(bots.Result[userindex].TotalInventoryCount >= globalSettings.botMinItems);  // DEBUG
             debugPrint(globalSettings.botMaxItems > 0 && bots.Result[userindex].TotalInventoryCount <= globalSettings.botMaxItems);  // DEBUG
             debugPrint(blacklist.includes(bots.Result[userindex].SteamID));  // DEBUG
+            updateProgress('bots');
             updateProgress('botBadges');
             GetCards(0, userindex + 1);
             return;
@@ -937,6 +938,7 @@
                         } else {  // DEBUG
                             debugPrint("bot has private profile:" + bots.Result[userindex].SteamID);  // DEBUG
                         }  // DEBUG
+                        updateProgress('bots');
                         // Blacklist private users, saves time
                         blacklist.push(bots.Result[userindex].SteamID);
                         SaveConfig();
