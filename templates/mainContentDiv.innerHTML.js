@@ -16,7 +16,7 @@
                 <div id="scan-pages-radial" class="radial-progress" style="--progress: 0deg;">
                     <div id="scan-pages-text" class="progress-inner">?</div>
                 </div>
-                <span id="scan-pages-label" class="label">${globalSettings.useScanFilters && globalSettings.scanFilters.filter(x => x.active) ? 'Filters' : 'Badge Pages'}</span>
+                <span id="scan-pages-label" class="label">${globalSettings.useScanFilters && globalSettings.scanFilters.filter(x => x.active).length ? 'Filters' : 'Badge Pages'}</span>
             </div>
             <div class="progress-step">
                 <div id="scan-badges-radial" class="radial-progress" style="--progress: 0deg;">
