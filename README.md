@@ -2,7 +2,7 @@
 
 ## Installation
 Install [Tampermonkey](https://www.tampermonkey.net/) for your browser.\
-Allow userscripts by navigating to **chrome://extensions**, clicking **Details** on Tampermonkey and clicking on **Allow User Scripts**.\
+Allow userscripts by navigating to **chrome://extensions**, clicking **Details** on Tampermonkey and enabling **Allow User Scripts**.\
 Go to [the latest release](https://github.com/iBreakEverything/ASF-STM-Enhancement/releases/latest) and click on **ASF-STM.user.js** entry in assets.
 
 ## Usage
