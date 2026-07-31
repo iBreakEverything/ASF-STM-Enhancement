@@ -38,6 +38,7 @@ It does what the original [ASF-STM (by Rudokhvist)](https://github.com/Rudokhvis
 ## Changelog
 Version | Date | Info
 :-: | :-: | :-
+v5.8.0 | 2026-07-31 | Change local storage config name in preparation to new update
 v5.7.4 | 2026-07-26 | Reduce the additional time consumption caused by 302 redirects when getting cards. ([8b891b7 by HCLonely](https://github.com/Rudokhvist/ASF-STM/commit/8b891b7087d1bf9e2803a1970aa0d97ec22eb35f)), various fixes and improvements
 v5.7.3 | 2025-07-03 | Various bug fixes
 v5.7.2 | 2025-06-29 | Solve private inventories scans

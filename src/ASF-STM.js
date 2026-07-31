@@ -194,7 +194,7 @@
             </div>`.replaceAll(/(  |\n)/g, '');
         }
 
-        globalSettings.scanFilters.sort((x, y) => x.title < y.title ? -1 : x.title > y.title ? 1 : x.appid - y.appid);
+        globalSettings.scanFilters.sort((x, y) => x.title < y.title ? -1 : x.title > y.title ? 1 : x.appid - y.appid); // FIXME Add try catch on read and reset settings
         const scanFiltersTemplate = globalSettings.scanFilters.map(x => createScanFilterElement(x.active, x.appId, x.title)).join('');
 
         const configDialogTemplate = `{{CONFIG_DIALOG_TEMPLATE}}`;
@@ -255,13 +255,13 @@
     }
 
     function SaveConfig() {
-        localStorage.setItem("Ryzhehvost.ASF.STM.Settings", JSON.stringify(globalSettings));
-        localStorage.setItem("Ryzhehvost.ASF.STM.Blacklist", JSON.stringify(blacklist));
+        localStorage.setItem("TempAsfStm.ASF.STM.Settings", JSON.stringify(globalSettings));
+        localStorage.setItem("TempAsfStm.ASF.STM.Blacklist", JSON.stringify(blacklist));
     }
 
     function LoadConfig() {
-        globalSettings = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Settings"));
-        blacklist = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Blacklist"));
+        globalSettings = JSON.parse(localStorage.getItem("TempAsfStm.ASF.STM.Settings"));
+        blacklist = JSON.parse(localStorage.getItem("TempAsfStm.ASF.STM.Blacklist"));
         if (globalSettings === null) {
             ResetConfig();
         }
@@ -281,11 +281,11 @@
             tradeParams.cardNames = Array.from(cardNames);
         }
         debugPrint(JSON.stringify(tradeParams.filter));  // DEBUG
-        localStorage.setItem("Ryzhehvost.ASF.STM.Params", JSON.stringify(tradeParams));
+        localStorage.setItem("TempAsfStm.ASF.STM.Params", JSON.stringify(tradeParams));
     }
 
     function LoadParams() {
-        return JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.Params"));
+        return JSON.parse(localStorage.getItem("TempAsfStm.ASF.STM.Params"));
     }
 
     function AddScanFilter(appId) {
@@ -1527,7 +1527,7 @@
                         // https://github.com/JustArchiNET/ArchiSteamFarm/wiki/Configuration#matchabletypes
                         bots.Result = bots.Result.filter(bot => bot.MatchableTypes.find(x => x === 5))
                         debugPrint("found total " + bots.Result.length + " bots");  // DEBUG
-                        localStorage.setItem("Ryzhehvost.ASF.STM.BotCache", JSON.stringify(bots));
+                        localStorage.setItem("TempAsfStm.ASF.STM.BotCache", JSON.stringify(bots));
                         buttonPressedEvent();
                     } else {
                         //ASF backend does not indicate success
@@ -1582,7 +1582,7 @@
 
         debugPrint(profileRegex);  // DEBUG
 
-        let botCache = JSON.parse(localStorage.getItem("Ryzhehvost.ASF.STM.BotCache"));
+        let botCache = JSON.parse(localStorage.getItem("TempAsfStm.ASF.STM.BotCache"));
         if (botCache === null || botCache.cacheTime === undefined || botCache.cacheTime === null || botCache.cacheTime + botCacheTime < Date.now() || globalSettings.matchFriends !== botCache.friends) {
             botCache = null;
             debugPrint("Bot cache invalidated");  // DEBUG
