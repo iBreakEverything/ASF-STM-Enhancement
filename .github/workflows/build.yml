@@ -62,5 +62,5 @@ jobs:
           files: |
             dist/ASF-STM.user.js
             dist/ASF-STM.debug.js
-          name: ASF-STM-plus V${{ env.VERSION }}
+          name: ASF-STM-Enhancement V${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
