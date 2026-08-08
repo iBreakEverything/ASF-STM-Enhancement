@@ -12,6 +12,7 @@
 // @match           *://steamcommunity.com/tradeoffer/new/*source=asfstm*
 // @version         {{VERSION}}
 // @connect         asf.justarchi.net
+// @connect         raw.githubusercontent.com
 // @grant           GM.xmlHttpRequest
 // @grant           GM_addStyle
 // @grant           GM_xmlhttpRequest
@@ -38,6 +39,8 @@
     };
     let defaultSettings = {
         matchFriends: false,
+        inventoryScan: false,
+        inventoryScanDelay: 3000,
         anyBots: true,
         fairBots: true,
         sortByName: true,
@@ -227,6 +230,9 @@
                 globalSettings.debug = configDialog.querySelector("#debug").checked;  // DEBUG
                 let newmaxErrors = Number(configDialog.querySelector("#maxErrors").value);
                 globalSettings.maxErrors = isNaN(newmaxErrors) ? globalSettings.maxErrors : newmaxErrors;
+                globalSettings.inventoryScan = configDialog.querySelector("#inventoryScan").checked;
+                let newinventoryScanDelay = Number(configDialog.querySelector("#inventoryScanDelay").value);
+                globalSettings.inventoryScanDelay = isNaN(newinventoryScanDelay) ? globalSettings.inventoryScanDelay : newinventoryScanDelay;
                 globalSettings.filterBackgroundColor = mixAlpha(hexToRgba(configDialog.querySelector("#filterBackgroundColor").value), configDialog.querySelector("#filterBackgroundAlpha").value);
                 globalSettings.preventClose = configDialog.querySelector("#preventClose").checked;
                 globalSettings.tradeMessage = configDialog.querySelector("#tradeMessage").value;
@@ -331,6 +337,15 @@
         } else {
             progressRadials[radial].textElement.textContent = `${progressRadials[radial].currentStep} / ${totalSteps}`
         }
+    }
+
+    function getFirstRadialName() {
+        if (globalSettings.useScanFilters && globalSettings.scanFilters.filter(x => x.active).length) {
+            return 'Filters';
+        } else if (globalSettings.inventoryScan) {
+            return 'Inventory Pages';
+        }
+        return 'Badge Pages';
     }
 
     function blacklistEventHandler(event) {
@@ -1085,7 +1100,7 @@
         });
     }
 
-    function getBadges(page) {
+    function processFilters() {
         const activeScanFilters = globalSettings.scanFilters.filter(x => x.active);
         if (globalSettings.useScanFilters && activeScanFilters.length) {
             for (let filter of activeScanFilters) {
@@ -1108,6 +1123,13 @@
                 },
                 globalSettings.weblimiter + globalSettings.errorLimiter * errors,
             );
+            return true;
+        }
+        return false;
+    }
+
+    function getBadges(page) {
+        if (processFilters()) {
             return;
         }
         let url = "https://steamcommunity.com/" + myProfileLink + "/badges?p=" + page;
@@ -1219,6 +1241,182 @@
             }
         };
         xhr.send();
+    }
+
+    async function fetchInventory() {
+        const re = /g_steamID = "(.*)";/g;
+        const g_steamID = re.exec(document.documentElement.textContent)[1];
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        const baseUrl =
+            `https://steamcommunity.com/inventory/${g_steamID}/753/6?l=english&count=2000`;
+
+        const inventory = {
+            assets: [],
+            descriptions: [],
+        };
+
+        let startAssetId = null;
+        let firstRequest = true;
+
+        while (true) {
+            if (!firstRequest) {
+                await sleep(globalSettings.inventoryScanDelay);
+            }
+
+            const url = startAssetId
+                ? `${baseUrl}&start_assetid=${startAssetId}`
+                : baseUrl;
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Keep only item_class_2 descriptions
+            if (data.descriptions) {
+                for (const description of data.descriptions) {
+                    const itemClass = description.tags?.find(
+                        tag => tag.category === "item_class"
+                    );
+
+                    if (itemClass?.internal_name === "item_class_2") {
+                        inventory.descriptions.push(description);
+                    }
+                }
+            }
+
+            // Keep the assets from this page
+            if (data.assets) {
+                inventory.assets.push(...data.assets);
+            }
+
+            inventory.success = data.success;
+            if (firstRequest) {
+                progressRadials.scanPages.steps = Math.ceil(data.total_inventory_count / 2000) + 1;
+            }
+            updateProgress('scanPages');
+
+            // item_class_3 means we've reached the end of item_class_2
+            const reachedClass3 = data.descriptions?.some(description =>
+                description.tags?.some(tag =>
+                    tag.category === 'item_class' &&
+                    ['item_class_3', 'item_class_4'].includes(tag.internal_name)
+                )
+            );
+
+            if (reachedClass3 || !data.more_items) {
+                progressRadials.scanPages.steps = 1;
+                progressRadials.scanPages.radialElement.classList.add('full-blue');
+                updateProgress('scanPages');
+                break;
+            }
+
+            startAssetId = data.last_assetid;
+            firstRequest = false;
+        }
+
+        return inventory;
+    }
+
+    async function getBadgesInventory() {
+        if (processFilters()) {
+            return;
+        }
+        const re = /g_steamID = "(.*)";/g;
+        const g_steamID = re.exec(document.documentElement.textContent)[1];
+
+        const fetchJSON = url => new Promise((resolve, reject) => {
+            GM_xmlhttpRequest({
+                method: "GET",
+                url,
+                onload: response => {
+                    if (response.status < 200 || response.status >= 300) {
+                        reject(new Error(`HTTP Error ${response.status}`));
+                        return;
+                    }
+
+                    try {
+                        resolve(JSON.parse(response.responseText));
+                    } catch (error) {
+                        reject(error);
+                    }
+                },
+                onerror: () => reject(new Error("Request failed"))
+            });
+        });
+        const badgeCardData = await fetchJSON('https://raw.githubusercontent.com/nolddor/steam-badges-db/main/data/badges.min.json');
+        const inventoryData = await fetchInventory();
+
+        const descriptions = inventoryData.descriptions.filter(desc =>
+            desc.tags.some(tag =>tag.internal_name === "cardborder_0")
+        )
+
+        /* Get inventory assets as assetId (unique per item) and classId (generic per item) */
+        const assets = inventoryData.assets.map(({ assetid, classid }) => ({ assetid, classid }));
+
+        /* Get inventory descriptions map as classId and appId */
+        const classidMap = new Map(descriptions.filter(x => x.market_fee_app in badgeCardData).map(({ classid, market_fee_app }) => [ classid, market_fee_app ]));
+
+        const scanResult = {};
+
+        /* Map assets to appId */
+        for (const {classid} of assets) {
+            const appId = classidMap.get(classid);
+
+            if (!appId) continue;
+
+            if (!scanResult[appId]) {
+                scanResult[appId] = {data:{}, max_size: 0, unbalanced: undefined};
+            }
+
+            scanResult[appId].data[classid] = (scanResult[appId].data[classid] || 0) + 1;
+            scanResult[appId].max_size = badgeCardData[appId].size;
+        }
+
+        /* Check for unbalanced appIds */
+        for (const appId in scanResult) {
+            const { data, max_size } = scanResult[appId];
+
+            const counts = Object.values(data);
+            const count = counts.reduce((acc, a) => acc + a, 0);
+            const size = Object.keys(data).length;
+
+            const min = Math.floor(count / max_size);
+            const max = Math.ceil(count / max_size);
+
+            scanResult[appId].unbalanced = counts.some(
+                count => count !== min && count !== max
+            );
+
+            // Missing classids count as 0
+            if (size < max_size && min > 0) {
+                scanResult[appId].unbalanced = true;
+            }
+        }
+
+        /* Push badge stub to myBadges list */
+        for (let appId of Object.keys(scanResult)) {
+            if (scanResult[appId].unbalanced) {
+                myBadges.push({
+                    appId: appId,
+                    title: badgeCardData[appId].name,
+                    maxCards: 0,
+                    maxSets: 0,
+                    lastSet: 0,
+                    cards: [],
+                });
+            }
+        }
+        setTimeout(
+            function () {
+                GetOwnCards(0);
+            },
+            globalSettings.weblimiter + globalSettings.errorLimiter * errors,
+        );
     }
 
     function addScanFilterEventHandler() {
@@ -1384,7 +1582,12 @@
             matches: {},
             filter: [],
         };
-        getBadges(1);
+        if (globalSettings.inventoryScan) {
+            getBadgesInventory();
+        }
+        else {
+            getBadges(1);
+        }
     }
 
     function resetRadials() {

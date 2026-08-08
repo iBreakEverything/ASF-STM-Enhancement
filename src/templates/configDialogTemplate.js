@@ -84,6 +84,14 @@
                     <span class="asf-stm-span">Max errors:</span>
                     <input type="number" id="maxErrors" value=${globalSettings.maxErrors} min=0 class="asf-stm-input">
                 </div>
+                <div class="grid-column-start: 1;grid-row-start: 4;">
+                    <span class="asf-stm-span">Scan inventory</span>
+                    <input type="checkbox" id="inventoryScan" ${globalSettings.inventoryScan ? 'checked' : ''} class="asf-stm-checkbox">
+                </div>
+                <div style="grid-column-start: 1;grid-row-start: 5;">
+                    <span class="asf-stm-span">Inventory scan delay (ms):</span>
+                    <input type="number" id="inventoryScanDelay" value=${globalSettings.inventoryScanDelay} min=1 class="asf-stm-input">
+                </div>
             </fieldset>
         </div>
     </li>

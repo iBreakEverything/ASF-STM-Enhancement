@@ -25,6 +25,7 @@ Go to [the latest release](https://github.com/iBreakEverything/ASF-STM-Enhanceme
 It does what the original [ASF-STM (by Rudokhvist)](https://github.com/Rudokhvist/ASF-STM) script does with some extra features.
 
 ## Added features
+- Invenotry scan: scan your inventory in only 10\* seconds!
 - Friend match: match with your public-inventory friends (friends-only/private inventories will mark the badges as private).
 - Scan filters: you don't want to scan the badges every time? add some filters and reduce your scan time considerably!
 - Updated UI for better UX: buttons are now clickable (not just the text), nickname sanitization, scrollable menus, link to trade partener's badge.
@@ -34,10 +35,12 @@ It does what the original [ASF-STM (by Rudokhvist)](https://github.com/Rudokhvis
 
 ## WIP:
 - [Add your request here](https://github.com/iBreakEverything/ASF-STM-Enhancement/pulls)
+- Duplicate list
 
 ## Changelog
 Version | Date | Info
 :-: | :-: | :-
+**v6.0.0.12** | 2026-08-08 | Added efficent inventory fetching, making searches up to 8900% faster\*\*.
 v5.8.0 | 2026-07-31 | Change local storage config name in preparation to new update
 v5.7.4 | 2026-07-26 | Reduce the additional time consumption caused by 302 redirects when getting cards. ([8b891b7 by HCLonely](https://github.com/Rudokhvist/ASF-STM/commit/8b891b7087d1bf9e2803a1970aa0d97ec22eb35f)), various fixes and improvements
 v5.7.3 | 2025-07-03 | Various bug fixes
@@ -52,5 +55,9 @@ v5.3.0 | 2025-03-25 | Critical bug fix #37
 v5.2.2 | 2025-03-15 | Latest version, all features added
 v5.2.0 | 2025-03-15 | Filter fixes, optimizations, UI enchancements
 v5.1.0 | 2025-03-03 | Misc fixes
-v5.0.13 | 2024-12-27 | Fiends, Filters and CI/CD
+**v5.0.13** | 2024-12-27 | Fiends, Filters and CI/CD
 v4.2 | 2024-10-22 | Latest [ASF-STM](https://github.com/Rudokhvist/ASF-STM) release by Rudokhvist
+
+\*  10 seconds for 6000 card items inventories, +3 seconds for every 2000 items.
+
+\*\*  Based on the old average badge page scan of 30 minutes (20 pages) and new inventory scan of 20 seconds (6 request of 2000 items).
